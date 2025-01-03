@@ -1,0 +1,22 @@
+#admin-kubeconfig and ca.cert files will originally not be there.
+#Applying the set configurations for ServiceAccount referencing a secret, Cluster Role, and Binding the Cluster Roles. 
+#Additionally creating a secret that generates a token
+kubectl apply -f admin_sa_rolebinding.yaml 
+kubectl apply -f admin_sa_token_secret.yaml 
+
+#Generating a Admin-SA KubeConfig
+#Embedding the API Server Address and CA data into the config
+kubectl get configmap -n kube-system kube-root-ca.crt -o jsonpath='{.data.ca\.crt}' > ca.crt
+kubectl config set-cluster nazz-cluster --server=https://<Controller IP>:6443 --certificate-authority=./ca.crt --embed-certs=true --kubeconfig=admin-kubeconfig
+
+#Creating and Setting a Context for the kubeconfig
+kubectl config set-context admin-context --cluster=nazz-cluster --user=admin-sa --kubeconfig=admin-kubeconfig
+kubectl config use-context admin-context --kubeconfig=admin-kubeconfig
+
+#Authenticating user, by using the token generated, automatically fetching via pipe
+kubectl describe secret/admin-sa-token -n kube-system | sed -n 's/^token: //p' | xargs -I {} kubectl config set-credentials admin-sa --token={} --kubeconfig=admin-kubeconfig
+
+
+## No Longer needed if pipe works
+#kubectl describe secret/admin-sa-token -n kube-system
+#kubectl config set-credentials admin-sa --token=<admin-sa-token> --kubeconfig=admin-kubeconfig

@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: waha
+  labels:
+    app: waha
+spec:
+  serviceName: "waha"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: waha
+  template:
+    metadata:
+      labels:
+        app: waha
+    spec:
+      containers:
+        - name: waha
+          image: "devlikeapro/waha:latest"
+          ports:
+            - containerPort: 3000
+          volumeMounts:
+            - name: waha-pvc
+              mountPath: /app/config  # Mount path for config files
+            - name: waha-pvc
+              mountPath: /app/dashboard  # Mount path for dashboard files
+          env:
+            - name: WAHA_ZIPPER
+              value: "ZIPUNZIP"
+      volumes:
+        - name: waha-pvc
+          persistentVolumeClaim:
+            claimName: waha-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: waha
+spec:
+  selector:
+    app: waha
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: waha-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: rook-cephfs
+  resources:
+    requests:
+      storage: 5Gi  # Adjust size as needed for both config and dashboard data
+

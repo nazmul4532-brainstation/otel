@@ -1,0 +1,32 @@
+##First create an admin service account following the steps in admin-sa creation folder.
+
+##Deploy the dummy spring project using:
+kubectl apply -f simple_spring_app.yaml
+
+##Applying Metrics API in a cluster... wait a while.. most likely needed for pod metrics
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+##Applying kube-state-metrics for detecting Kube States.. most likely needed for pod phases
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/kube-state-metrics/master/examples/standard/deployment.yaml
+
+##Use this to add custom created service account name here... in this case it is admin-sa
+kubectl patch deployment kube-state-metrics -n kube-system --type='json' -p='[{"op": "add", "path": "/spec/template/spec/serviceAccountName", "value": "admin-sa"}]'
+kubectl patch deployment metrics-server -n kube-system --type='json' -p='[{"op": "add", "path": "/spec/template/spec/serviceAccountName", "value": "admin-sa"}]'
+
+##helm deploy prometheus
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+helm upgrade --install prometheus prometheus-community/prometheus -f prometheus-values.yaml --namespace monitoring --create-namespace
+
+##helm deploy grafana
+kubectl create secret generic grafana-admin-secret \
+  --from-literal=admin-user=admin \
+  --from-literal=admin-password=fintech@bs23 \
+  --namespace monitoring
+
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo update
+helm upgrade --install grafana grafana/grafana -f grafana-values.yaml --namespace monitoring
+
+##Access Grafana, and Prometheus UI by port forwarding them at 3000, and 9090 respectively.
+##Import the dashboards in the dashboards folder in grafana dashboards ui
