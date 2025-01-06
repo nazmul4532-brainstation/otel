@@ -243,8 +243,7 @@ server:
   ##     secretKeyRef:
   ##       name: mysecret
   ##       key: username
-  env: []
-
+  env:
   # List of flags to override default parameters, e.g:
   # - --enable-feature=agent
   # - --storage.agent.retention.max-time=30m
@@ -308,8 +307,11 @@ server:
   ## Additional Prometheus server container arguments
   ## Set to null for argumentless flags
   ##
-  extraArgs: {}
+  ##I changed here
+  extraArgs:
     # web.enable-remote-write-receiver: null
+    web.enable-remote-write-receiver: ""
+    enable-feature: "exemplar-storage,native-histograms"
 
   ## Additional InitContainers to initialize the pod
   ##

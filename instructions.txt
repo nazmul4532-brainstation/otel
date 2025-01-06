@@ -18,11 +18,24 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 helm repo update
 helm upgrade --install prometheus prometheus-community/prometheus -f prometheus-values.yaml --namespace monitoring --create-namespace
 
+
+##helm deploy loki-distributed
+helm upgrade --install loki grafana/loki-distributed -n loki --create-namespace -f loki-values.yaml
+
+##helm deploy tempo
+helm upgrade --install tempo grafana/tempo -n tempo --create-namespace -f tempo-values.yaml
+
+##helm deploy otel collector
+helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+helm install opentelemetry-collector open-telemetry/opentelemetry-collector --set mode=daemonset --set image.repository="otel/opentelemetry-collector-k8s" --set command.name="otelcol-k8s" -n otel
+
 ##helm deploy grafana
 kubectl create secret generic grafana-admin-secret \
   --from-literal=admin-user=admin \
   --from-literal=admin-password=fintech@bs23 \
   --namespace monitoring
+
+  
 
 helm repo add grafana https://grafana.github.io/helm-charts
 helm repo update
