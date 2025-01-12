@@ -1,0 +1,19 @@
+NAME: loki-distributed
+LAST DEPLOYED: Sat May 11 21:04:22 2024
+NAMESPACE: loki
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+***********************************************************************
+ Welcome to Grafana Loki
+ Chart version: 0.79.0
+ Loki version: 2.9.6
+***********************************************************************
+
+Installed components:
+* ingester
+* distributor
+* querier
+* query-frontend
+* compactor

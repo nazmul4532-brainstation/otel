@@ -1,0 +1,11 @@
+NAME: tenant
+LAST DEPLOYED: Wed Feb 14 21:34:59 2024
+NAMESPACE: minio-tenant
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+To connect to the abg-uat-minio-tenant-logs tenant if it doesn't have a service exposed, you can port-forward to it by running:
+  kubectl --namespace minio-tenant port-forward svc/abg-uat-minio-tenant-logs-console 9090:9090
+
+  Then visit the MinIO Console at http://127.0.0.1:9090

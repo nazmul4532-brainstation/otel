@@ -4,11 +4,11 @@ metadata:
   name: spring-boot-demo-pvc
 spec:
   accessModes:
-    - ReadWriteOnce  # Adjust access mode as needed
+    - ReadWriteOnce  
   resources:
     requests:
-      storage: 1Gi  # Specify the storage size
-  storageClassName: openebs-hostpath  # Use the cephfs storage class
+      storage: 1Gi  
+  storageClassName: openebs-hostpath
 
 ---
 apiVersion: apps/v1
@@ -35,13 +35,28 @@ spec:
           image: nazmul4532brainstation/spring-boot-demo:latest
           ports:
             - containerPort: 8080
-          volumeMounts:  # Mount the PVC here
-            - mountPath: /data  # Path where the volume will be mounted in the container
-              name: spring-boot-demo-storage  # Name of the volume
-      volumes:  # Define the volume
+          volumeMounts: 
+            - mountPath: /data  
+              name: spring-boot-demo-storage  
+          env:
+            - name: OTEL_SERVICE_NAME
+              value: "spring-boot-demo"
+            - name: OTEL_TRACES_SAMPLER
+              value: "always_on"
+            - name: OTEL_TRACES_EXPORTER
+              value: "otlp"
+            - name: OTEL_METRICS_EXPORTER
+              value: "otlp"
+            - name: OTEL_LOGS_EXPORTER
+              value: "otlp"
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "grpc"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://opentelemetry-collector.otel.svc.cluster.local:4317"
+      volumes:  
         - name: spring-boot-demo-storage
           persistentVolumeClaim:
-            claimName: spring-boot-demo-pvc  # Reference the PVC created above
+            claimName: spring-boot-demo-pvc 
 ---
 apiVersion: v1
 kind: Service

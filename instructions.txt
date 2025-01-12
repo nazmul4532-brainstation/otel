@@ -25,7 +25,7 @@ helm upgrade --install prometheus prometheus-community/prometheus -f prometheus-
 helm upgrade --install loki grafana/loki-distributed -n loki --create-namespace -f loki-values.yaml
 
 ##helm deploy tempo
-helm upgrade --install tempo grafana/tempo -n tempo --create-namespace -f tempo-values.yaml
+helm install tempo grafana/tempo-distributed -f tempo/tempo-values.yaml --namespace tempo
 
 ##helm deploy otel collector
 helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts

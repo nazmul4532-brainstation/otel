@@ -1,0 +1,5 @@
+Install:
+    helm install loki --namespace loki -f grafana-loki-values.yaml bitnami/grafana-loki --create-namespace
+    helm install loki --namespace loki bitnami/grafana-loki -f /home/jhalak/Documents/bs_projects/bs-fintech/abg-k8s-conf/abg-uat-k8s/graphana/loki/grafana-loki-values.yaml --create-namespace
+
+
