@@ -1,4 +1,4 @@
-mode: deployment
+mode: daemonset
 
 config:
   receivers:
@@ -6,6 +6,8 @@ config:
       protocols:
         grpc:
           endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
 
   exporters:
     otlp:
@@ -38,6 +40,14 @@ replicaCount: 1
 image:
   repository: "otel/opentelemetry-collector-k8s"
 
+presets:
+  kubernetesAttributes:
+    enabled: true
+  kubeletMetrics:
+    enabled: true
+  logsCollection:
+    enabled: true
+
 resources:
   requests:
     memory: 500Mi
@@ -45,3 +55,13 @@ resources:
   limits:
     memory: 1Gi
     cpu: 1
+
+service:
+  enabled: true
+  name: opentelemetry-collector
+  type: ClusterIP
+  ports:
+    - port: 4317
+      targetPort: 4317
+    - port: 4318
+      targetPort: 4318

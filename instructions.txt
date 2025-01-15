@@ -18,11 +18,11 @@ kubectl patch deployment metrics-server -n kube-system --type='json' -p='[{"op":
 ##helm deploy prometheus
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
-helm upgrade --install prometheus prometheus-community/prometheus -f prometheus-values.yaml --namespace monitoring --create-namespace
+helm upgrade --install prometheus prometheus-community/prometheus -f prometheus/prometheus-values.yaml --namespace monitoring --create-namespace
 
 
 ##helm deploy loki-distributed
-helm upgrade --install loki grafana/loki-distributed -n loki --create-namespace -f loki-values.yaml
+helm upgrade --install loki grafana/loki-distributed -n loki --create-namespace -f loki/loki-values.yaml
 
 ##helm deploy tempo
 helm install tempo grafana/tempo-distributed -f tempo/tempo-values.yaml --namespace tempo
@@ -41,7 +41,7 @@ kubectl create secret generic grafana-admin-secret \
 
 helm repo add grafana https://grafana.github.io/helm-charts
 helm repo update
-helm upgrade --install grafana grafana/grafana -f grafana-values.yaml --namespace monitoring
+helm upgrade --install grafana grafana/grafana -f grafana/grafana-values.yaml --namespace monitoring
 
 ##Access Grafana, and Prometheus UI by port forwarding them at 3000, and 9090 respectively.
 ##Import the dashboards in the dashboards folder in grafana dashboards ui

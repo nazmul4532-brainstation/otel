@@ -90,11 +90,10 @@ loki:
   # Refers to https://grafana.com/docs/loki/latest/configuration/#server
   server:
     # -- HTTP server listen port
-    max_receive_message_length: 104857600  
-    max_send_message_length: 104857600 
-    http_listen_address: 0.0.0.0
-    grpc_listen_port: 0
     http_listen_port: 3100
+    grpc_server_max_recv_msg_size: 104857600
+    grpc_server_max_send_msg_size: 104857600
+    grpc_server_max_concurrent_streams: 1000
   # -- Config file contents for Loki
   # @default -- See values.yaml
   config: |
@@ -263,7 +262,7 @@ loki:
       cache_location: /loki/index_cache
       cache_ttl: 250h
     aws:
-      s3: http://minioadmin:minioadmin@minio.minio-tenant.svc.cluster.local:9000
+      s3: http://minioadmin:minioadmin@otel-minio-hl.minio-tenant.svc.cluster.local:9000
       bucketnames: loki
       s3forcepathstyle: true
 
@@ -529,7 +528,7 @@ ingester:
     # @notationType -- list
     claims:
       - name: data
-        size: 5Gi
+        size: 1Gi
         #   -- Storage class to be used.
         #   If defined, storageClassName: <storageClass>.
         #   If set to "-", storageClassName: "", which disables dynamic provisioning.
@@ -759,7 +758,7 @@ querier:
     # -- Enable creating PVCs for the querier cache
     enabled: true
     # -- Size of persistent disk
-    size: 5Gi
+    size: 1Gi
     # -- Storage class to be used.
     # If defined, storageClassName: <storageClass>.
     # If set to "-", storageClassName: "", which disables dynamic provisioning.
@@ -1440,7 +1439,7 @@ compactor:
     # -- Enable creating PVCs for the compactor
     enabled: true
     # -- Size of persistent disk
-    size: 5Gi
+    size: 1Gi
     # -- Storage class to be used.
     # If defined, storageClassName: <storageClass>.
     # If set to "-", storageClassName: "", which disables dynamic provisioning.
@@ -1556,7 +1555,7 @@ ruler:
     # -- Enable creating PVCs which is required when using recording rules
     enabled: false
     # -- Size of persistent disk
-    size: 5Gi
+    size: 1Gi
     # -- Storage class to be used.
     # If defined, storageClassName: <storageClass>.
     # If set to "-", storageClassName: "", which disables dynamic provisioning.
@@ -1709,7 +1708,7 @@ indexGateway:
     # -- Use emptyDir with ramdisk for storage. **Please note that all data in indexGateway will be lost on pod restart**
     inMemory: false
     # -- Size of persistent or memory disk
-    size: 5Gi
+    size: 1Gi
     # -- Storage class to be used.
     # If defined, storageClassName: <storageClass>.
     # If set to "-", storageClassName: "", which disables dynamic provisioning.
@@ -1846,7 +1845,7 @@ memcachedChunks:
     # -- Enable creating PVCs which will persist cached data through restarts
     enabled: false
     # -- Size of persistent or memory disk
-    size: 5Gi
+    size: 1Gi
     # -- Storage class to be used.
     # If defined, storageClassName: <storageClass>.
     # If set to "-", storageClassName: "", which disables dynamic provisioning.
@@ -1915,7 +1914,7 @@ memcachedFrontend:
     # -- Enable creating PVCs which will persist cached data through restarts
     enabled: false
     # -- Size of persistent or memory disk
-    size: 5Gi
+    size: 1Gi
     # -- Storage class to be used.
     # If defined, storageClassName: <storageClass>.
     # If set to "-", storageClassName: "", which disables dynamic provisioning.
@@ -1980,7 +1979,7 @@ memcachedIndexQueries:
     # -- Enable creating PVCs which will persist cached data through restarts
     enabled: false
     # -- Size of persistent or memory disk
-    size: 5Gi
+    size: 1Gi
     # -- Storage class to be used.
     # If defined, storageClassName: <storageClass>.
     # If set to "-", storageClassName: "", which disables dynamic provisioning.
@@ -2045,7 +2044,7 @@ memcachedIndexWrites:
     # -- Enable creating PVCs which will persist cached data through restarts
     enabled: false
     # -- Size of persistent or memory disk
-    size: 5Gi
+    size: 1Gi
     # -- Storage class to be used.
     # If defined, storageClassName: <storageClass>.
     # If set to "-", storageClassName: "", which disables dynamic provisioning.

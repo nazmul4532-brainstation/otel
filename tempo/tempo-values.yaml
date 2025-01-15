@@ -1552,7 +1552,13 @@ storage:
       # -- Lis with dedicated attribute columns (only for vParquet3 or later)
       dedicated_columns: []
     # -- The supported storage backends are gcs, s3 and azure, as specified in https://grafana.com/docs/tempo/latest/configuration/#storage
-    backend: local
+    backend: s3
+    s3:
+      access_key: "minioadmin"  # Replace with your MinIO access key
+      secret_key: "minioadmin" # Replace with your MinIO secret key
+      bucket: "tempo"                     # Name of the bucket for Tempo
+      endpoint: "minioadmin:minioadmin@otel-minio-hl.minio-tenant.svc.cluster.local:9000" # Replace <minio-endpoint> with MinIO server address
+      insecure: true    
     # The worker pool is used primarily when finding traces by id, but is also used by others.
     pool:
       # -- Total number of workers pulling jobs from the queue
