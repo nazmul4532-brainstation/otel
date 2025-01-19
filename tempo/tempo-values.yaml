@@ -571,7 +571,7 @@ distributor:
     log_received_traces: null
     # -- Enable to log every received span to help debug ingestion or calculate span error distributions using the logs
     log_received_spans:
-      enabled: false
+      enabled: true
       include_all_attributes: false
       filter_by_status_error: false
     # -- Disables write extension with inactive ingesters

@@ -281,10 +281,12 @@ server:
     evaluation_interval: 1m
   ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write
   ##
-  remoteWrite: []
+  remoteWrite:
+    - url: "http://grafana.monitoring.svc.cluster.local"
   ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_read
   ##
-  remoteRead: []
+  remoteRead: 
+    - url: "http://opentelemetry-collector-collector.otel.svc.cluster.local:4318"
   ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#tsdb
   ##
   tsdb: {}
@@ -898,7 +900,12 @@ serverFiles:
       - /etc/config/alerts
       - /etc/config/custom_alerts.yml
 
-    scrape_configs:                                                                                                 
+    scrape_configs:     
+      - job_name: 'otel-collector'
+        scrape_interval: 5s
+        static_configs:
+          - targets: ['opentelemetry-collector-collector-monitoring.otel.svc.cluster.local:8888']      
+
       - job_name: prometheus
         static_configs:
           - targets:

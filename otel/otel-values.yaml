@@ -1,4 +1,4 @@
-mode: daemonset
+mode: deployment
 
 config:
   receivers:
@@ -11,15 +11,15 @@ config:
 
   exporters:
     otlp:
-      endpoint: http://tempo-distributor.tempo.svc.cluster.local:9095
+      endpoint: http://tempo-distributor.tempo.svc.cluster.local:4317
       tls:
         insecure: true
-    otlphttp/prometheusremotewrite:
+    prometheusremotewrite:
       endpoint: http://prometheus-server.monitoring.svc.cluster.local/api/v1/write
       tls:
         insecure: true
-    otlphttp/logs:
-      endpoint: http://loki-loki-distributed-distributor.loki.svc.cluster.local:3100/otlp
+    loki:
+      endpoint: http://loki-loki-distributed-distributor.loki.svc.cluster.local:3100/loki/api/v1/push
       tls:
         insecure: true
 
@@ -30,23 +30,23 @@ config:
         exporters: [otlp]
       metrics:
         receivers: [otlp]
-        exporters: [otlphttp/prometheusremotewrite]
+        exporters: [prometheusremotewrite]
       logs:
         receivers: [otlp]
-        exporters: [otlphttp/logs]
+        exporters: [loki]
 
 replicaCount: 1
 
 image:
-  repository: "otel/opentelemetry-collector-k8s"
+  repository: "otel/opentelemetry-collector-contrib"
 
-presets:
-  kubernetesAttributes:
-    enabled: true
-  kubeletMetrics:
-    enabled: true
-  logsCollection:
-    enabled: true
+# presets:
+#   kubernetesAttributes:
+#     enabled: true
+#   kubeletMetrics:
+#     enabled: true
+#   logsCollection:
+#     enabled: true
 
 resources:
   requests:
@@ -55,13 +55,3 @@ resources:
   limits:
     memory: 1Gi
     cpu: 1
-
-service:
-  enabled: true
-  name: opentelemetry-collector
-  type: ClusterIP
-  ports:
-    - port: 4317
-      targetPort: 4317
-    - port: 4318
-      targetPort: 4318

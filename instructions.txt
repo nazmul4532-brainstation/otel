@@ -14,6 +14,7 @@ kubectl patch deployment kube-state-metrics -n kube-system --type='json' -p='[{"
 kubectl patch deployment metrics-server -n kube-system --type='json' -p='[{"op": "add", "path": "/spec/template/spec/serviceAccountName", "value": "admin-sa"}]'
 
 ##helm deploy minio
+#Follow instructions in minio folder
 
 ##helm deploy prometheus
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
@@ -27,9 +28,19 @@ helm upgrade --install loki grafana/loki-distributed -n loki --create-namespace 
 ##helm deploy tempo
 helm install tempo grafana/tempo-distributed -f tempo/tempo-values.yaml --namespace tempo
 
-##helm deploy otel collector
-helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
-helm install opentelemetry-collector open-telemetry/opentelemetry-collector --set mode=daemonset --set image.repository="otel/opentelemetry-collector-k8s" --set command.name="otelcol-k8s" -n otel
+#helm deploy otel operator
+helm install -n otel opentelemetry-operator open-telemetry/opentelemetry-operator -f otel/otel-operator-values.yaml
+
+apply opentelemetry-collector cr
+kubectl apply -n otel -f otel/otel-collector.yaml
+
+
+
+###helm deploy otel collector
+#helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+#helm install opentelemetry-collector open-telemetry/opentelemetry-collector --set mode=daemonset --set image.repository="otel/opentelemetry-collector-k8s" --set command.name="otelcol-k8s" -n otel
+
+
 
 ##helm deploy grafana
 kubectl create secret generic grafana-admin-secret \

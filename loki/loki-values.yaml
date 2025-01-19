@@ -139,6 +139,7 @@ loki:
       reject_old_samples_max_age: 168h
       max_cache_freshness_per_query: 10m
       split_queries_by_interval: 15m
+      allow_structured_metadata: true
 
     {{- if .Values.loki.schemaConfig}}
     schema_config:
@@ -2092,3 +2093,4 @@ networkPolicy:
     podSelector: {}
     # -- Specifies the namespace the discovery Pods are running in
     namespaceSelector: {}
+    
