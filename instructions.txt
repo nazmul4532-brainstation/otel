@@ -56,3 +56,8 @@ helm upgrade --install grafana grafana/grafana -f grafana/grafana-values.yaml --
 
 ##Access Grafana, and Prometheus UI by port forwarding them at 3000, and 9090 respectively.
 ##Import the dashboards in the dashboards folder in grafana dashboards ui
+
+
+
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm install etcd bitnami/etcd

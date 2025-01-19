@@ -322,6 +322,8 @@ loki:
     volume_enabled: true
     retention_period: 168h
     allow_structured_metadata: true
+    max_structured_metadata_entries_count: 256
+    max_query_parallelism: 16  # Increase if under heavy load
   # -- Provides a reloadable runtime configuration file for some specific configuration
   runtimeConfig: {}
   # -- Check https://grafana.com/docs/loki/latest/configuration/#common_config for more info on how to provide a common configuration
@@ -345,7 +347,12 @@ loki:
         rules_directory: /var/loki/tmp/loki/rules
     ring:
       kvstore:
-        store: inmemory
+        store: etcd
+        etcd:
+          endpoints:
+            - "http://etcd.default.svc.cluster.local:2379"
+          username: root
+          password: 8OeyoWEHKJ
   # -- Storage config. Providing this will automatically populate all necessary storage configs in the templated config.
   storage:
     # Loki requires a bucket for chunks and the ruler. GEL requires a third bucket for the admin API.
@@ -453,10 +460,10 @@ loki:
   # -- Additional storage config
   storage_config:
     tsdb_shipper:
-      # index_gateway_client:
-      #   server_address: '{{ include "loki.indexGatewayAddress" . }}'
-      active_index_directory: /loki/index
-      cache_location: /loki/index_cache
+      index_gateway_client:
+        server_address: '{{ include "loki.indexGatewayAddress" . }}'
+      active_index_directory: /var/loki/index
+      cache_location: /var/loki/index_cache
       cache_ttl: 250h     
       
     boltdb_shipper:
@@ -486,7 +493,8 @@ loki:
   analytics: 
     reporting_enabled: false
   # --  Optional querier configuration
-  query_range: {}
+  query_range:
+    parallelise_shardable_queries: true
   # --  Optional querier configuration
   querier: {}
   # --  Optional ingester configuration
@@ -494,7 +502,7 @@ loki:
   # --  Optional index gateway configuration
   index_gateway:
     mode: simple
-  loki.querySchedulerAddress: "loki-query-scheduler.loki.svc.cluster.local:9095"
+  loki.querySchedulerAddress: "https://loki-query-scheduler.loki.svc.cluster.local:9095"
   frontend:
     scheduler_address: '{{ include "loki.querySchedulerAddress" . }}'
     tail_proxy_url: '{{ include "loki.querierAddress" . }}'
@@ -2325,9 +2333,9 @@ queryScheduler:
 # -- Configuration for the index-gateway
 indexGateway:
   # -- Number of replicas for the index-gateway
-  replicas: 0
+  replicas: 1
   # -- Whether the index gateway should join the memberlist hashring
-  joinMemberlist: true
+  joinMemberlist: false
   # -- hostAliases to add
   hostAliases: []
   #  - ip: 1.2.3.4
@@ -2387,11 +2395,11 @@ indexGateway:
   tolerations: []
   persistence:
     # -- Enable creating PVCs which is required when using boltdb-shipper
-    enabled: false
+    enabled: true
     # -- Use emptyDir with ramdisk for storage. **Please note that all data in indexGateway will be lost on pod restart**
     inMemory: false
     # -- Size of persistent or memory disk
-    size: 10Gi
+    size: 1Gi
     # -- Storage class to be used.
     # If defined, storageClassName: <storageClass>.
     # If set to "-", storageClassName: "", which disables dynamic provisioning.

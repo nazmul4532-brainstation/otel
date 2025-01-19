@@ -286,7 +286,7 @@ server:
   ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_read
   ##
   remoteRead: 
-    - url: "http://opentelemetry-collector-collector.otel.svc.cluster.local:4318"
+    - url: "http://opentelemetry-collector-collector.opentelemetry.svc.cluster.local:4318"
   ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#tsdb
   ##
   tsdb: {}
@@ -901,10 +901,10 @@ serverFiles:
       - /etc/config/custom_alerts.yml
 
     scrape_configs:     
-      - job_name: 'otel-collector'
+      - job_name: 'opentelemetry-collector'
         scrape_interval: 5s
         static_configs:
-          - targets: ['opentelemetry-collector-collector-monitoring.otel.svc.cluster.local:8888']      
+          - targets: ['opentelemetry-collector-collector-monitoring.opentelemetry.svc.cluster.local:8888']      
 
       - job_name: prometheus
         static_configs:
