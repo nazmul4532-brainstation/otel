@@ -52,7 +52,7 @@ spec:
             - name: OTEL_EXPORTER_OTLP_PROTOCOL
               value: "grpc"
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: "http://opentelemetry-collector-collector.otel.svc.cluster.local:4317"
+              value: "http://opentelemetry-collector-collector.opentelemetry.svc.cluster.local:4317"
       volumes:  
         - name: spring-app-storage
           persistentVolumeClaim:

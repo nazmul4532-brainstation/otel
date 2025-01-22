@@ -1,5 +1,5 @@
 
-Minio Operator Installation:
+#Minio Operator Installation:
 helm install \
   --namespace minio-operator \
   --create-namespace \
@@ -7,11 +7,11 @@ helm install \
 
     kubectl apply -f operator-console-nodeport-service.yaml
     
-Tenant Installation:
-        helm install \
-          --namespace minio-tenant \
-          --create-namespace \
-          tenant minio-operator/tenant -f tenant-values.yaml
+#Tenant Installation:
+helm install \
+  --namespace minio-tenant \
+  --create-namespace \
+  tenant minio-operator/tenant -f tenant-values.yaml
 
 helm delete tenant --namespace minio-tenant
 

@@ -1,0 +1,135 @@
+loki:
+  schemaConfig:
+    configs:
+      - from: 2024-04-01
+        store: tsdb
+        object_store: s3
+        schema: v13
+        index:
+          prefix: loki_index_
+          period: 24h
+  storage_config:
+    aws:
+      s3: http://minioadmin:minioadmin@otel-minio-hl.minio-tenant.svc.cluster.local:9000
+      bucketnames: loki
+      s3forcepathstyle: true
+  ingester:
+      chunk_encoding: snappy
+  pattern_ingester:
+      enabled: true
+  limits_config:
+    allow_structured_metadata: true
+    volume_enabled: true
+    retention_period: 240h # 10 days retention
+  querier:
+      max_concurrent: 4
+
+  storage:
+    type: s3
+    bucketNames:
+        chunks: loki-chunks
+        ruler: loki-rulers
+        admin: loki-admin
+    s3:
+      s3: http://minioadmin:minioadmin@otel-minio-hl.minio-tenant.svc.cluster.local:9000
+      endpoint: http://minioadmin:minioadmin@otel-minio-hl.minio-tenant.svc.cluster.local:9000
+      secretAccessKey: minioadmin
+      accessKeyId: minioadmin
+      s3ForcePathStyle: true
+      insecure: true
+      http_config: {}
+
+  deploymentMode: Distributed
+
+  minio:
+      enabled: false
+
+  ingester:
+    replicas: 3
+    persistence:
+        enabled: true
+        inMemory: false
+        claims:
+          - name: data
+            size: 1Gi
+            storageClass: openebs-hostpath
+        enableStatefulSetAutoDeletePVC: false
+        whenDeleted: Retain
+        whenScaled: Retain
+    extraVolumeMounts:
+      - name: loki-index-cache
+        mountPath: /loki
+    extraVolumes:
+      - name: loki-index-cache
+        emptyDir: {}
+
+  querier:
+    replicas: 3
+    persistence:
+      enabled: true
+      size: 1Gi
+      storageClass: openebs-hostpath
+      annotations: {}
+    maxUnavailable: 2
+    extraVolumeMounts:
+      - name: loki-index-cache
+        mountPath: /loki
+    extraVolumes:
+      - name: loki-index-cache
+        emptyDir: {}
+
+  queryFrontend:
+    replicas: 2
+    maxUnavailable: 1
+
+  queryScheduler:
+    replicas: 2
+
+  distributor:
+    replicas: 3
+    maxUnavailable: 2
+
+  compactor:
+    replicas: 1
+    persistence:
+      enabled: true
+      size: 1Gi
+      storageClass: openebs-hostpath
+      annotations: {}
+      claims:
+        - name: data
+          size: 2Gi
+          storageClass: openebs-hostpath
+      enableStatefulSetAutoDeletePVC: false
+      whenDeleted: Retain
+      whenScaled: Retain
+
+  indexGateway:
+    replicas: 2
+    maxUnavailable: 1
+  persistence:
+    enabled: true
+    inMemory: false
+    size: 1Gi
+    storageClass: openebs-hostpath
+    annotations: {}
+    enableStatefulSetAutoDeletePVC: false
+    whenDeleted: Retain
+    whenScaled: Retain
+
+  bloomPlanner:
+    replicas: 0
+  bloomBuilder:
+    replicas: 0
+  bloomGateway:
+    replicas: 0
+
+  backend:
+    replicas: 0
+  read:
+    replicas: 0
+  write:
+    replicas: 0
+
+  singleBinary:
+    replicas: 0

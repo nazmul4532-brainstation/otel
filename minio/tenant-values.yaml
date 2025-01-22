@@ -249,6 +249,9 @@ tenant:
   #         region: us-east-1        # optional
   buckets:
     - name: loki
+    - name: loki-chunks
+    - name: loki-rulers
+    - name: loki-admin
     - name: tempo
     - name: file-server
     - name: test

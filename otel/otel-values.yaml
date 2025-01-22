@@ -15,7 +15,7 @@ config:
       tls:
         insecure: true
     prometheusremotewrite:
-      endpoint: http://prometheus-server.monitoring.svc.cluster.local/api/v1/write
+      endpoint: http://prometheus-server.prometheus.svc.cluster.local/api/v1/write
       tls:
         insecure: true
     loki:

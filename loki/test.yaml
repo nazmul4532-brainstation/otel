@@ -333,15 +333,15 @@ loki:
     compactor_address: '{{ include "loki.compactorAddress" . }}'
     instance_addr: 0.0.0.0
     storage:
-
       s3:
-        access_key_id: minioadmin
         bucketnames: loki
         endpoint: http://minioadmin:minioadmin@otel-minio-hl.minio-tenant.svc.cluster.local:9000
-        insecure: true
         s3: http://minioadmin:minioadmin@otel-minio-hl.minio-tenant.svc.cluster.local:9000
         s3forcepathstyle: true
         secret_access_key: minioadmin
+        access_key_id: minioadmin
+        insecure: true
+
       filesystem:
         chunks_directory: /var/loki/tmp/loki/chunks
         rules_directory: /var/loki/tmp/loki/rules
@@ -350,17 +350,17 @@ loki:
         store: etcd
         etcd:
           endpoints:
-            - "http://etcd.default.svc.cluster.local:2379"
+            - "http://etcd.etcd.svc.cluster.local:2379"
           username: root
-          password: 8OeyoWEHKJ
+          password: 3JyY7KtnLF
   # -- Storage config. Providing this will automatically populate all necessary storage configs in the templated config.
   storage:
     # Loki requires a bucket for chunks and the ruler. GEL requires a third bucket for the admin API.
     # Please provide these values if you are using object storage.
     bucketNames:
-      chunks: loki
-      ruler: test
-      admin: test
+      chunks: loki-chunks
+      ruler: loki-rulers
+      admin: loki-admin
     type: s3
     s3:
       s3: http://minioadmin:minioadmin@otel-minio-hl.minio-tenant.svc.cluster.local:9000
@@ -429,14 +429,19 @@ loki:
       default_validity: "12h"
   # -- Check https://grafana.com/docs/loki/latest/configuration/#schema_config for more info on how to configure schemas
   schemaConfig: 
-    configs:
-      - from: 2024-10-24
+      configs:
+      - from: 2024-04-01
         store: tsdb
         object_store: s3
         schema: v13
         index:
-          prefix: index_
+          prefix: loki_index_
           period: 24h
+  storage_config:
+    aws:
+      s3: http://minioadmin:minioadmin@otel-minio-hl.minio-tenant.svc.cluster.local:9000
+      bucketnames: loki
+      s3forcepathstyle: true
   # -- a real Loki install requires a proper schemaConfig defined above this, however for testing or playing around
   # you can enable useTestSchema
   useTestSchema: false
