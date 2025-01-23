@@ -310,7 +310,7 @@ loki:
   memberlistConfig:
     bind_port: 7946
     join_members:
-      - loki-memberlist:7946 
+      - loki-memberlist.loki.svc.cluster:7946 
     # join_members:
       # - loki-distributor-headless.loki.svc.cluster.local
       # - loki-ingester-headless.loki.svc.cluster.local
@@ -484,7 +484,6 @@ loki:
       active_index_directory: /var/loki/index
       cache_location: /var/loki/index_cache
       cache_ttl: 250h     
-
     aws:
       s3: http://minioadmin:minioadmin@otel-minio-hl.minio-tenant.svc.cluster.local:9000
       bucketnames: loki
@@ -509,7 +508,7 @@ loki:
     retention_enabled: true
     retention_delete_delay: 2h
     retention_delete_worker_count: 150
-    delete_request_store: s3
+    delete_request_store: aws
   # --  Optional pattern ingester configuration
   pattern_ingester:
     enabled: false
