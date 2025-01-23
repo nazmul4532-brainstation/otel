@@ -50,6 +50,16 @@ loki:
       port: http-metrics
     initialDelaySeconds: 30
     timeoutSeconds: 1
+
+  distributorFullname: "http://loki-distributor-headless.loki.svc.cluster.local:3100"
+  indexGatewayAddress: "http://loki-index-gateway-headless.loki.svc.cluster.local:9095"
+  compactor_address: "http://loki-compactor.loki.svc.cluster.local:9095"
+  querySchedulerAddress: "http://loki-query-scheduler.loki.svc.cluster.local:9095"
+  querierAddress: "http://loki-querier.loki.svc.cluster.local:3100"
+  queryFrontendFullname: "http://loki-query-frontend.loki.svc.cluster.local:3100"
+  rulerFullname: "http://loki-ruler.loki.svc.cluster.local:9095"
+
+
   image:
     # -- The Docker registry
     registry: docker.io
@@ -298,7 +308,10 @@ loki:
   # Should authentication be enabled
   auth_enabled: false
   # -- memberlist configuration (overrides embedded default)
-  memberlistConfig: {}
+  memberlistConfig: 
+    bind_port: 7946
+    join_members:
+      - loki-memberlist:7946 
   # -- Extra memberlist configuration
   extraMemberlistConfig: {}
   # -- Tenants list to be created on nginx htpasswd file, with name and password keys
@@ -321,8 +334,8 @@ loki:
     query_timeout: 300s
     volume_enabled: true
     retention_period: 168h
+    max_structured_metadata_entries_count: 123456789
     allow_structured_metadata: true
-    max_structured_metadata_entries_count: 256
     max_query_parallelism: 16  # Increase if under heavy load
   # -- Provides a reloadable runtime configuration file for some specific configuration
   runtimeConfig: {}
@@ -437,11 +450,6 @@ loki:
         index:
           prefix: loki_index_
           period: 24h
-  storage_config:
-    aws:
-      s3: http://minioadmin:minioadmin@otel-minio-hl.minio-tenant.svc.cluster.local:9000
-      bucketnames: loki
-      s3forcepathstyle: true
   # -- a real Loki install requires a proper schemaConfig defined above this, however for testing or playing around
   # you can enable useTestSchema
   useTestSchema: false
@@ -464,6 +472,10 @@ loki:
   query_scheduler: {}
   # -- Additional storage config
   storage_config:
+    aws:
+      s3: http://minioadmin:minioadmin@otel-minio-hl.minio-tenant.svc.cluster.local:9000
+      bucketnames: loki
+      s3forcepathstyle: true
     tsdb_shipper:
       index_gateway_client:
         server_address: '{{ include "loki.indexGatewayAddress" . }}'
@@ -507,7 +519,6 @@ loki:
   # --  Optional index gateway configuration
   index_gateway:
     mode: simple
-  loki.querySchedulerAddress: "https://loki-query-scheduler.loki.svc.cluster.local:9095"
   frontend:
     scheduler_address: '{{ include "loki.querySchedulerAddress" . }}'
     tail_proxy_url: '{{ include "loki.querierAddress" . }}'
