@@ -4,7 +4,9 @@ k0sctl apply --config cluser_creation/cluster_config.yaml --no-wait
 cilium install --version 1.16.1 --values cilium_values.yaml 
 cilium status --wait
 
-##Then create an admin service account following the steps in admin-sa creation folder.
+##Then create an admin ServiceAccount
+kubectl apply -f admin-sa_creation/admin_sa_rolebinding.yaml 
+kubectl apply -f admin-sa_createion/admin_sa_token_secret.yaml 
 
 ##Deploy the dummy spring project using:
 kubectl create namespace spring-app
@@ -73,8 +75,6 @@ kubectl create secret generic grafana-admin-secret \
   --from-literal=admin-user=admin \
   --from-literal=admin-password=fintech@bs23 \
   --namespace grafana
-
-  
 
 helm repo add grafana https://grafana.github.io/helm-charts
 helm repo update
