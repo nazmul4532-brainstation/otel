@@ -1,7 +1,15 @@
-##First create an admin service account following the steps in admin-sa creation folder.
+
+##First create a test Cluster... Change the ssh key configuration, and the ip addresses in the file accordingly.
+k0sctl apply --config cluser_creation/cluster_config.yaml --no-wait 
+cilium install --version 1.16.1 --values cilium_values.yaml 
+cilium status --wait
+
+##Then create an admin service account following the steps in admin-sa creation folder.
 
 ##Deploy the dummy spring project using:
-kubectl apply -f simple_spring_app.yaml
+kubectl create namespace spring-app
+kubectl apply -f spring-app/simple_spring_app.yaml -n spring-app
+kubectl apply -f spring-app/ingress.yaml
 
 ##Applying Metrics API in a cluster... wait a while.. most likely needed for pod metrics
 kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
@@ -13,11 +21,11 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/kube-state-metrics
 kubectl patch deployment kube-state-metrics -n kube-system --type='json' -p='[{"op": "add", "path": "/spec/template/spec/serviceAccountName", "value": "admin-sa"}]'
 kubectl patch deployment metrics-server -n kube-system --type='json' -p='[{"op": "add", "path": "/spec/template/spec/serviceAccountName", "value": "admin-sa"}]'
 
-#helm deploy openebs storageclass
+#Helm deploy openebs storageclass
 helm upgrade --install openebs openebs/openebs --namespace openebs --create-namespace
 kubectl patch storageclass openebs-hostpath -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 
-##helm deploy minio
+##Helm deploy minio
 #Minio Operator Installation:
 helm upgrade --install \
   --namespace minio-operator \
@@ -32,34 +40,35 @@ helm upgrade --install \
   --create-namespace \
   tenant minio-operator/tenant -f tenant-values.yaml
 
+##Minio console ingress   
+kubectl apply -f minio/ingress.yaml -n minio-tenant
 
-##helm deploy prometheus
+
+##Helm deploy prometheus
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
 helm upgrade --install prometheus prometheus-community/prometheus -f prometheus/prometheus-values.yaml --namespace prometheus --create-namespace
 
 
-##helm deploy loki-distributed
-helm upgrade --install loki grafana/loki-distributed -n loki --create-namespace -f loki/loki-values.yaml
+##Helm deploy loki
+helm upgrade --install loki grafana/loki -f loki/loki-memberlist.yaml --namespace loki --create-namespace
 
-##helm deploy tempo
+##Helm deploy tempo
 helm upgrade --install tempo grafana/tempo-distributed -f tempo/tempo-values.yaml --namespace tempo
 
-#helm deploy opentelemetry operator
+##Helm deploy opentelemetry operator
 helm upgrade --install -n opentelemetry opentelemetry-operator open-telemetry/opentelemetry-operator -f otel/otel-operator-values.yaml
 
-apply opentelemetry-collector cr
+##Apply opentelemetry-collector in daemonset mode... if needed change to deployment
 kubectl apply -n opentelemetry -f otel/otel-collector.yaml
 
-
-
-###helm deploy opentelemetry collector
+##Helm deploy opentelemetry collector
 #helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
 #helm upgrade --install opentelemetry-collector open-telemetry/opentelemetry-collector --set mode=daemonset --set image.repository="otel/opentelemetry-collector-k8s" --set command.name="otelcol-k8s" -n opentelemetry
 
 
 
-##helm deploy grafana
+##Helm deploy grafana
 kubectl create secret generic grafana-admin-secret \
   --from-literal=admin-user=admin \
   --from-literal=admin-password=fintech@bs23 \
@@ -73,10 +82,3 @@ helm upgrade --install grafana grafana/grafana -f grafana/grafana-values.yaml --
 
 ##Access Grafana, and Prometheus UI by port forwarding them at 3000, and 9090 respectively.
 ##Import the dashboards in the dashboards folder in grafana dashboards ui
-
-
-
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm upgrade --install etcd bitnami/etcd -n etcd --create-namespace
-#to fetch the password
-kubectl get secret --namespace etcd etcd -o jsonpath="{.data.etcd-root-password}" | base64 -d
