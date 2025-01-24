@@ -359,13 +359,13 @@ loki:
     # Loki requires a bucket for chunks and the ruler. GEL requires a third bucket for the admin API.
     # Please provide these values if you are using object storage.
     bucketNames: 
-      chunks: loki
-      ruler: ruler
-      admin: admin
+      chunks: loki-chunks
+      ruler: loki-rulers
+      admin: loki-admin
     type: s3
     s3:
-      s3: http://minioaccesskey:miniosecretkey@minio-tenant-logs-hl.minio-tenant.svc.cluster.local:9000
-      endpoint: http://minioaccesskey:miniosecretkey@minio-tenant-logs-hl.minio-tenant.svc.cluster.local:9000
+      s3: http://minioaccesskey:miniosecretkey@otel-minio-hl.minio-tenant.svc.cluster.local:9000
+      endpoint: http://minioaccesskey:miniosecretkey@otel-minio-hl.minio-tenant.svc.cluster.local:9000
       region: us-east-1
       secretAccessKey: minioaccesskey
       accessKeyId: minioaccesskey
@@ -413,7 +413,7 @@ loki:
         server_address: dns:///loki-index-gateway.loki.svc.cluster.local:9095
     aws:
       bucketnames: loki
-      s3: http://minioaccesskey:miniosecretkey@minio-tenant-logs-hl.minio-tenant.svc.cluster.local:9000
+      s3: http://minioaccesskey:miniosecretkey@otel-minio-hl.minio-tenant.svc.cluster.local:9000
       region: us-east-1
       insecure: true
       s3forcepathstyle: true
@@ -455,7 +455,7 @@ loki:
     #   access_key: "minioaccesskey"  # MINIO_ROOT_USER
     #   secret_key: "miniosecretkey"  # MINIO_ROOT_PASSWORD
     #   bucket: "loki"
-    #   endpoint: "minio-tenant-logs-hl.minio-tenant.svc.cluster.local:9000"
+    #   endpoint: "otel-minio-hl.minio-tenant.svc.cluster.local:9000"
     #   insecure: true
     #   s3forcepathstyle: true
     bloom_shipper:
@@ -1393,7 +1393,7 @@ singleBinary:
     # -- Enable persistent disk
     enabled: true
     # -- Size of persistent disk
-    size: 10Gi
+    size: 2Gi
     # -- Storage class to be used.
     # If defined, storageClassName: <storageClass>.
     # If set to "-", storageClassName: "", which disables dynamic provisioning.
@@ -1522,7 +1522,7 @@ write:
     # -- Enable StatefulSetAutoDeletePVC feature
     enableStatefulSetAutoDeletePVC: false
     # -- Size of persistent disk
-    size: 10Gi
+    size: 2Gi
     # -- Storage class to be used.
     # If defined, storageClassName: <storageClass>.
     # If set to "-", storageClassName: "", which disables dynamic provisioning.
@@ -1633,7 +1633,7 @@ read:
     # -- Enable StatefulSetAutoDeletePVC feature
     enableStatefulSetAutoDeletePVC: true
     # -- Size of persistent disk
-    size: 10Gi
+    size: 2Gi
     # -- Storage class to be used.
     # If defined, storageClassName: <storageClass>.
     # If set to "-", storageClassName: "", which disables dynamic provisioning.
@@ -1744,7 +1744,7 @@ backend:
     # -- Enable StatefulSetAutoDeletePVC feature
     enableStatefulSetAutoDeletePVC: true
     # -- Size of persistent disk
-    size: 10Gi
+    size: 2Gi
     # -- Storage class to be used.
     # If defined, storageClassName: <storageClass>.
     # If set to "-", storageClassName: "", which disables dynamic provisioning.
@@ -1899,7 +1899,7 @@ ingester:
     # @notationType -- list
     claims:
       - name: data
-        size: 10Gi
+        size: 2Gi
         #   -- Storage class to be used.
         #   If defined, storageClassName: <storageClass>.
         #   If set to "-", storageClassName: "", which disables dynamic provisioning.
@@ -2175,7 +2175,7 @@ querier:
     # -- Enable creating PVCs for the querier cache
     enabled: true
     # -- Size of persistent disk
-    size: 10Gi
+    size: 2Gi
     # -- Storage class to be used.
     # If defined, storageClassName: <storageClass>.
     # If set to "-", storageClassName: "", which disables dynamic provisioning.
@@ -2415,7 +2415,7 @@ indexGateway:
     # -- Use emptyDir with ramdisk for storage. **Please note that all data in indexGateway will be lost on pod restart**
     inMemory: false
     # -- Size of persistent or memory disk
-    size: 10Gi
+    size: 2Gi
     # -- Storage class to be used.
     # If defined, storageClassName: <storageClass>.
     # If set to "-", storageClassName: "", which disables dynamic provisioning.
@@ -2479,14 +2479,14 @@ compactor:
   extraArgs:
     - 'config.expand-env=true'  # -- Environment variables to add to the compactor pods
   extraEnv: 
-  - name: AWS_ACCESS_KEY_ID
-    value: "minioaccesskey"
-  - name: AWS_SECRET_ACCESS_KEY
-    value: "miniosecretkey"
-  - name: AWS_SDK_LOAD_CONFIG
-    value: "1"
-  - name: AWS_DEBUG
-    value: "1"
+    - name: AWS_ACCESS_KEY_ID
+      value: "minioaccesskey"
+    - name: AWS_SECRET_ACCESS_KEY
+      value: "miniosecretkey"
+    - name: AWS_SDK_LOAD_CONFIG
+      value: "1"
+    - name: AWS_DEBUG
+      value: "1"
   # -- Environment variables from secrets or configmaps to add to the compactor pods
   extraEnvFrom: []
   # -- Volume mounts to add to the compactor pods
@@ -2516,7 +2516,7 @@ compactor:
     # -- Enable creating PVCs for the compactor
     enabled: true
     # -- Size of persistent disk
-    size: 10Gi
+    size: 2Gi
     # -- Storage class to be used.
     # If defined, storageClassName: <storageClass>.
     # If set to "-", storageClassName: "", which disables dynamic provisioning.
@@ -2529,7 +2529,7 @@ compactor:
     # @notationType -- list
     claims:
       - name: data
-        size: 10Gi
+        size: 2Gi
         #   -- Storage class to be used.
         #   If defined, storageClassName: <storageClass>.
         #   If set to "-", storageClassName: "", which disables dynamic provisioning.
@@ -2630,7 +2630,7 @@ bloomGateway:
     claims:
       - name: data
         # -- Size of persistent disk
-        size: 10Gi
+        size: 2Gi
         #   -- Storage class to be used.
         #   If defined, storageClassName: <storageClass>.
         #   If set to "-", storageClassName: "", which disables dynamic provisioning.
@@ -2729,7 +2729,7 @@ bloomPlanner:
     claims:
       - name: data
         # -- Size of persistent disk
-        size: 10Gi
+        size: 2Gi
         #   -- Storage class to be used.
         #   If defined, storageClassName: <storageClass>.
         #   If set to "-", storageClassName: "", which disables dynamic provisioning.
@@ -2914,7 +2914,7 @@ patternIngester:
     # -- Enable creating PVCs for the pattern ingester
     enabled: false
     # -- Size of persistent disk
-    size: 10Gi
+    size: 2Gi
     # -- Storage class to be used.
     # If defined, storageClassName: <storageClass>.
     # If set to "-", storageClassName: "", which disables dynamic provisioning.
@@ -2927,7 +2927,7 @@ patternIngester:
     # @notationType -- list
     claims:
       - name: data
-        size: 10Gi
+        size: 2Gi
         #   -- Storage class to be used.
         #   If defined, storageClassName: <storageClass>.
         #   If set to "-", storageClassName: "", which disables dynamic provisioning.
@@ -3031,7 +3031,7 @@ ruler:
     # -- Enable creating PVCs which is required when using recording rules
     enabled: false
     # -- Size of persistent disk
-    size: 10Gi
+    size: 2Gi
     # -- Storage class to be used.
     # If defined, storageClassName: <storageClass>.
     # If set to "-", storageClassName: "", which disables dynamic provisioning.
@@ -3484,12 +3484,12 @@ minio:
     requests:
       cpu: 100m
       memory: 128Mi
-  address: http://minioaccesskey:miniosecretkey@minio-tenant-logs-hl.minio-tenant.svc.cluster.local:9000
+  address: http://minioaccesskey:miniosecretkey@otel-minio-hl.minio-tenant.svc.cluster.local:9000
 
 # storage:
 #   type: s3
 #   s3:
-#     s3: http://minioaccesskey:miniosecretkey@minio-tenant-logs-hl.minio-tenant.svc.cluster.local:9000
+#     s3: http://minioaccesskey:miniosecretkey@otel-minio-hl.minio-tenant.svc.cluster.local:9000
 #     bucketnames: loki
 #     region: us-east-1
 #     s3forcepathstyle: true
