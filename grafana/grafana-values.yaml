@@ -7,6 +7,24 @@ admin:
   userKey: admin-user
   passwordKey: admin-password
 
+grafana.ini:
+  log:
+    level: debug
+  smtp:
+    enabled: true
+    host: "smtp.gmail.com:587"
+    fromName: "Grafana" 
+    skipVerify: true  
+    tls: true 
+    sendReminder: false  
+
+
+smtp:
+  existingSecret: grafana-smtp-secret
+  userkey: user
+  passwordKey: password
+
+
 
 persistence:
   enabled: true

@@ -42,6 +42,23 @@ helm upgrade --install \
   --create-namespace \
   tenant minio-operator/tenant -f tenant-values.yaml
 
+Go into Minio Console and create the necessary buckets.. loki, loki-chunks, loki-rulers, loki-admin
+Generate an access key, and set the following as the access key policy
+{
+ "Version": "2012-10-17",
+ "Statement": [
+  {
+   "Effect": "Allow",
+   "Action": [
+    "s3:*"
+   ],
+   "Resource": [
+    "arn:aws:s3:::*"
+   ]
+  }
+ ]
+}
+
 ##Minio console ingress   
 kubectl apply -f minio/ingress.yaml -n minio-tenant
 
@@ -71,14 +88,22 @@ kubectl apply -n opentelemetry -f otel/otel-collector.yaml
 
 
 ##Helm deploy grafana
+#Custom Login Credentials
 kubectl create secret generic grafana-admin-secret \
   --from-literal=admin-user=admin \
   --from-literal=admin-password=fintech@bs23 \
   --namespace grafana
 
+#SMTP configuraiton secret
+kubectl create secret generic grafana-smtp-secret -n grafana \
+  --from-literal=user="nazmulhossain4532@gmail.com" \
+  --from-literal=password="zffm vrel glzp lltz"
+
 helm repo add grafana https://grafana.github.io/helm-charts
 helm repo update
 helm upgrade --install grafana grafana/grafana -f grafana/grafana-values.yaml --namespace grafana
+
+
 
 ##Access Grafana, and Prometheus UI by port forwarding them at 3000, and 9090 respectively.
 ##Import the dashboards in the dashboards folder in grafana dashboards ui
