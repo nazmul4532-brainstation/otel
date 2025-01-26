@@ -252,6 +252,11 @@ tenant:
     - name: loki-chunks
     - name: loki-rulers
     - name: loki-admin
+    - name: mimir
+    - name: mimir-blocks
+    - name: mimir-alertmanager
+    - name: mimir-ruler
+    - name: grafana
     - name: tempo
     - name: file-server
     - name: test

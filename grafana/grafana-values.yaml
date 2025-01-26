@@ -8,6 +8,16 @@ admin:
   passwordKey: admin-password
 
 grafana.ini:
+  storage:
+    type: s3
+    bucket: "test"   
+    access_key: "minioaccesskey" 
+    secret_key: "miniosecretkey" 
+    endpoint: "http://minioaccesskey:miniosecretkey@otel-minio-hl.minio-tenant.svc.cluster.local:9000" 
+    secure: false  
+    v4: true 
+    http_timeout: 10s   
+    
   smtp:
     enabled: true
     host: "smtp.gmail.com:587"

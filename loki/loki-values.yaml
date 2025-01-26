@@ -442,6 +442,14 @@ loki:
   rulerConfig:
     wal:
       dir: /var/loki/ruler-wal
+    enable_alertmanager_v2: true
+    enable_api: true
+    enable_sharding: true
+    alertmanager_url: http://localhost:9093
+    remote_write:
+      enabled: true
+      client:
+        url: http://prometheus-server.prometheus.svc.cluster.local:9090/api/v1/write
   # -- Structured loki configuration, takes precedence over `loki.config`, `loki.schemaConfig`, `loki.storageConfig`
   structuredConfig: {}
   # -- Additional query scheduler config

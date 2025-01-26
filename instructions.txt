@@ -68,6 +68,10 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 helm repo update
 helm upgrade --install prometheus prometheus-community/prometheus -f prometheus/prometheus-values.yaml --namespace prometheus --create-namespace
 
+#Helm install mimir:
+kubectl create namespace mimir
+helm show values grafana/mimir-distributed > mimir/values.yaml
+helm install mimir grafana/mimir-distributed -f mimir/values.yaml --namespace mimir
 
 ##Helm deploy loki
 helm upgrade --install loki grafana/loki -f loki/loki-memberlist.yaml --namespace loki --create-namespace
@@ -84,8 +88,6 @@ kubectl apply -n opentelemetry -f otel/otel-collector.yaml
 ##Helm deploy opentelemetry collector
 #helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
 #helm upgrade --install opentelemetry-collector open-telemetry/opentelemetry-collector --set mode=daemonset --set image.repository="otel/opentelemetry-collector-k8s" --set command.name="otelcol-k8s" -n opentelemetry
-
-
 
 ##Helm deploy grafana
 #Custom Login Credentials
