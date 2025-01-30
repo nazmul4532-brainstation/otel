@@ -366,7 +366,7 @@ loki:
     s3:
       s3: http://minioaccesskey:miniosecretkey@otel-minio-hl.minio-tenant.svc.cluster.local:9000
       endpoint: http://minioaccesskey:miniosecretkey@otel-minio-hl.minio-tenant.svc.cluster.local:9000
-      region: null
+      region: us-east-1
       secretAccessKey: miniosecretkey
       accessKeyId: minioaccesskey
       signatureVersion: null
@@ -414,7 +414,7 @@ loki:
     aws:
       bucketnames: loki
       s3: http://minioaccesskey:miniosecretkey@otel-minio-hl.minio-tenant.svc.cluster.local:9000
-      region: null
+      region: us-east-1
       insecure: true
       s3forcepathstyle: true
 
@@ -440,12 +440,13 @@ loki:
           period: 24h
   # -- Check https://grafana.com/docs/loki/latest/configuration/#ruler for more info on configuring ruler
   rulerConfig:
+    rule_path: /var/loki/rules-temp
+    alertmanager_url: http://prometheus-alertmanager-headless.prometheus.svc.cluster.local:9093
     wal:
       dir: /var/loki/ruler-wal
     enable_alertmanager_v2: true
     enable_api: true
-    enable_sharding: true
-    alertmanager_url: http://localhost:9093
+    enable_alertmanager_discovery: true
     remote_write:
       enabled: true
       client:
@@ -947,7 +948,7 @@ adminApi:
 # Configuration for the gateway
 gateway:
   # -- Specifies whether the gateway should be enabled
-  enabled: false
+  enabled: true
   # -- Number of replicas for the gateway
   replicas: 1
   # -- Default container port
@@ -1323,6 +1324,7 @@ migrate:
 ######################################################################################################################
 
 # Configuration for the single binary node(s)
+
 singleBinary:
   # -- Number of replicas for the single binary
   replicas: 0
@@ -1774,7 +1776,7 @@ backend:
 ingester:
   # -- Number of replicas for the ingester, when zoneAwareReplication.enabled is true, the total
   # number of replicas will match this value with each zone having 1/3rd of the total replicas.
-  replicas: 3
+  replicas: 2
   # -- hostAliases to add
   hostAliases: []
   #  - ip: 1.2.3.4
@@ -3052,39 +3054,43 @@ ruler:
   appProtocol:
     grpc: ""
   # -- Directories containing rules files
-  directories: {}
-  # custom_alerting_groups:
-  #   rules1.txt: |
-  #     groups:
-  #       - name: should_fire
-  #         rules:
-  #           - alert: HighPercentageError
-  #             expr: |
-  #               sum(rate({app="foo", env="production"} |= "error" [5m])) by (job)
-  #                 /
-  #               sum(rate({app="foo", env="production"}[5m])) by (job)
-  #                 > 0.05
-  #             for: 10m
-  #             labels:
-  #               severity: warning
-  #             annotations:
-  #               summary: High error rate
-  #       - name: credentials_leak
-  #         rules:
-  #           - alert: http-credentials-leaked
-  #             annotations:
-  #               message: "{{ $labels.job }} is leaking http basic auth credentials."
-  #             expr: 'sum by (cluster, job, pod) (count_over_time({namespace="prod"} |~ "http(s?)://(\\w+):(\\w+)@" [5m]) > 0)'
-  #             for: 10m
-  #             labels:
-  #               severity: critical
-  #   rules2.txt: |
-  #     groups:
-  #       - name: example
-  #         rules:
-  #         - alert: HighThroughputLogStreams
-  #           expr: sum by(container) (rate({job=~"loki-dev/.*"}[1m])) > 1000
-  #           for: 2m
+  directories:
+  /var/loki/rules/fake:
+    rules.txt: |
+      groups:
+          - name: example
+            rules:
+              - alert: LokiErrorLogs
+                expr: sum(count_over_time({app="loki"} |~ "error" [5m])) > 0
+                for: 3m
+                labels:
+                  severity: warning
+                  category: logs
+                annotations:
+                  message: "Loki has encountered errors in the last 5 minutes."
+              - alert: TestAlert
+                expr: vector(1)
+                for: 1m
+                labels:
+                  severity: info
+                  category: test
+                annotations:
+                  message: "This is a test alert to verify the alerting pipeline."
+              - alert: SpecificErrorMessage
+                expr: sum by (service_name) (count_over_time({service_name=~".+"} |= "error log message" [10m])) > 10
+                for: 5m
+                labels:
+                  severity: critical
+                  category: logs
+                annotations:
+                  message: 'Service {{ "{{" }} $labels.service_name {{ "}}" }} has logged "error log message" more than 10 times in the last 10 minutes.'
+    rules2.txt: |
+      groups:
+        - name: example
+          rules:
+          - alert: HighThroughputLogStreams
+            expr: sum by(container) (rate({job=~"loki-dev/.*"}[1m])) > 1000
+            for: 2m
   # tenant_bar:
   #   rules1.txt: |
   #     groups:
@@ -3505,26 +3511,43 @@ minio:
 
 # Create extra manifests via values. Would be passed through `tpl` for templating
 # objects can also be provided as multiline strings, useful for templating field names
-extraObjects: []
-# - apiVersion: v1
-#   kind: ConfigMap
-#   metadata:
-#     name: loki-alerting-rules
-#   data:
-#     loki-alerting-rules.yaml: |-
-#       groups:
-#         - name: example
-#           rules:
-#           - alert: example
-#             expr: |
-#               sum(count_over_time({app="loki"} |~ "error")) > 0
-#             for: 3m
-#             labels:
-#               severity: warning
-#               category: logs
-#             annotations:
-#               message: "loki has encountered errors"
-# - |
+# extraObjects:
+#   - apiVersion: v1
+#     kind: ConfigMap
+#     metadata:
+#       name: loki-alerting-rules
+#       labels:
+#         loki_rule: "1"
+#     data:
+#       rules.yaml: |-
+#         groups:
+#           - name: example
+#             rules:
+#               - alert: LokiErrorLogs
+#                 expr: sum(count_over_time({app="loki"} |~ "error" [5m])) > 0
+#                 for: 3m
+#                 labels:
+#                   severity: warning
+#                   category: logs
+#                 annotations:
+#                   message: "Loki has encountered errors in the last 5 minutes."
+#               - alert: TestAlert
+#                 expr: vector(1)
+#                 for: 1m
+#                 labels:
+#                   severity: info
+#                   category: test
+#                 annotations:
+#                   message: "This is a test alert to verify the alerting pipeline."
+#               - alert: SpecificErrorMessage
+#                 expr: sum by (service_name) (count_over_time({service_name=~".+"} |= "error log message" [10m])) > 10
+#                 for: 5m
+#                 labels:
+#                   severity: critical
+#                   category: logs
+#                 annotations:
+#                   message: 'Service {{ "{{" }} $labels.service_name {{ "}}" }} has logged "error log message" more than 10 times in the last 10 minutes.'
+# # - |
 #     apiVersion: v1
 #     kind: Secret
 #     type: Opaque
@@ -3563,7 +3586,7 @@ sidecar:
   # -- Set to true to skip tls verification for kube api calls.
   skipTlsVerify: false
   # -- Ensure that rule files aren't conflicting and being overwritten by prefixing their name with the namespace they are defined in.
-  enableUniqueFilenames: false
+  enableUniqueFilenames: true
   # -- Readiness probe definition. Probe is disabled on the sidecar by default.
   readinessProbe: {}
   # -- Liveness probe definition. Probe is disabled on the sidecar by default.
@@ -3574,13 +3597,13 @@ sidecar:
     # -- Label that the configmaps/secrets with rules will be marked with.
     label: loki_rule
     # -- Label value that the configmaps/secrets with rules will be set to.
-    labelValue: ""
+    labelValue: "1"
     # -- Folder into which the rules will be placed.
-    folder: /rules
+    folder: /var/loki/rules/fake
     # -- Comma separated list of namespaces. If specified, the sidecar will search for config-maps/secrets inside these namespaces.
     # Otherwise the namespace in which the sidecar is running will be used.
     # It's also possible to specify 'ALL' to search in all namespaces.
-    searchNamespace: null
+    searchNamespace: ALL
     # -- Method to use to detect ConfigMap changes. With WATCH the sidecar will do a WATCH request, with SLEEP it will list all ConfigMaps, then sleep for 60 seconds.
     watchMethod: WATCH
     # -- Search in configmap, secret, or both.

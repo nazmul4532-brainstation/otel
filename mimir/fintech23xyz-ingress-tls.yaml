@@ -11,7 +11,7 @@ metadata:
     reflector.v1.k8s.emberstack.com/reflects: cert-manager/fintech23xyz-ingress-tls
   creationTimestamp: "2024-12-17T08:16:03Z"
   name: fintech23xyz-ingress-tls
-  namespace: grafana
+  namespace: mimir
   resourceVersion: "353451866"
   uid: 3c555a17-c63e-41f5-8057-19ae4e0e7038
 type: kubernetes.io/tls

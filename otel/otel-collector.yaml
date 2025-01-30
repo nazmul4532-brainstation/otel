@@ -30,6 +30,10 @@ spec:
         endpoint: http://loki-distributor.loki.svc.cluster.local:3100/otlp
         tls:
           insecure: true
+      otlphttp:
+        endpoint: http://mimir-distributor-headless.mimir.svc.cluster.local:8080/otlp
+        tls:
+          insecure: true
 
     service:
       pipelines:
@@ -38,7 +42,7 @@ spec:
           exporters: [otlp]
         metrics:
           receivers: [otlp]
-          exporters: [prometheusremotewrite]
+          exporters: [prometheusremotewrite, otlphttp]
         logs:
           receivers: [otlp]
           exporters: [otlphttp/logs]

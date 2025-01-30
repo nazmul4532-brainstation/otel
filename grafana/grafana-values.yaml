@@ -45,10 +45,14 @@ datasources:
         access: proxy
         url: http://prometheus-server.prometheus.svc.cluster.local:80
         isDefault: true
+      - name: Mimir
+        type: prometheus
+        access: proxy
+        url: http://mimir-gateway.mimir.svc.cluster.local:8080/prometheus
       - name: Loki
         type: loki
         access: proxy
-        url: http://loki-query-frontend-headless.loki.svc.cluster.local:3100
+        url: http://loki-gateway.loki.svc.cluster.local
       - name: Tempo
         type: tempo
         access: proxy
@@ -63,6 +67,6 @@ ingress:
   tls:
     - hosts:
         - grafana.local.xyz
-      secretName: fintech23xyz-ingress-tls
+      secretName: grafana-ingress-tls
 
 

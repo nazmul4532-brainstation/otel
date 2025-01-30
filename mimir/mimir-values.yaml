@@ -117,7 +117,6 @@ vaultAgent:
   caCertPath: ""
 
 mimir:
-
   # ruler:
   #   enabled: true
   #   address: "http://mimir-ruler.mimir.svc.cluster.local:8080"
@@ -130,6 +129,7 @@ mimir:
   # -- Base config file for Grafana Mimir and Grafana Enterprise Metrics. Contains Helm templates that are evaulated at install/upgrade.
   # To modify the resulting configuration, either copy and alter 'mimir.config' as a whole or use the 'mimir.structuredConfig' to add and modify certain YAML elements.
   config: |
+    multitenancy_enabled: false
     usage_stats:
       installation_mode: helm
 
@@ -603,8 +603,7 @@ alertmanager:
   # If alertmanager.zoneAwareReplication.enabled=false, this number is taken as is.
   # Otherwise each zone starts `ceil(replicas / number_of_zones)` number of pods.
   #   E.g. if 'replicas' is set to 4 and there are 3 zones, then 4/3=1.33 and after rounding up it means 2 pods per zone are started.
-  replicas: 1
-
+  replicas: 2
   statefulSet:
     enabled: true
 
@@ -615,7 +614,7 @@ alertmanager:
     create: false
     # -- Alertmanager specific service account name. If not set and create is set to true, the default
     # name will be the default mimir service account's name with the "-alertmanager" suffix.
-    name: ""
+    name: "admin-sa"
     annotations: {}
     labels: {}
 
@@ -869,7 +868,7 @@ distributor:
   enabled: true
 
   # Setting it to null will produce a deployment without replicas set, allowing you to use autoscaling with the deployment
-  replicas: 3
+  replicas: 2
 
   # -- [Experimental] Configure autoscaling via KEDA (https://keda.sh). This requires having
   # KEDA already installed in the Kubernetes cluster. The metrics for scaling are read
@@ -985,7 +984,7 @@ ingester:
   # If ingester.zoneAwareReplication.enabled=false, this number is taken as is.
   # Otherwise each zone starts `ceil(replicas / number_of_zones)` number of pods.
   #   E.g. if 'replicas' is set to 4 and there are 3 zones, then 4/3=1.33 and after rounding up it means 2 pods per zone are started.
-  replicas: 3
+  replicas: 2
 
   statefulSet:
     enabled: true
@@ -1213,7 +1212,7 @@ ingester:
 
 overrides_exporter:
   enabled: true
-  replicas: 1
+  replicas: 2
 
   annotations: {}
 
@@ -1302,7 +1301,7 @@ overrides_exporter:
 
 ruler:
   enabled: true
-  replicas: 1
+  replicas: 2
 
   # -- [Experimental] Configure autoscaling via KEDA (https://keda.sh). This requires having
   # KEDA already installed in the Kubernetes cluster. The metrics for scaling are read
@@ -1873,7 +1872,7 @@ query_frontend:
   enabled: true
 
   # Setting it to null will produce a deployment without replicas set, allowing you to use autoscaling with the deployment
-  replicas: 1
+  replicas: 2
 
   # -- [Experimental] Configure autoscaling via KEDA (https://keda.sh). This requires having
   # KEDA already installed in the Kubernetes cluster. The metrics for scaling are read
@@ -2930,7 +2929,7 @@ minio:
 # Can only be enabled when 'enterprise.enabled' is false.
 nginx:
   # -- Specifies whether nginx should be enabled
-  enabled: true
+  enabled: false
   # -- Number of replicas for nginx
   replicas: 1
   # -- Enable logging of 2xx and 3xx HTTP requests
@@ -3037,14 +3036,14 @@ nginx:
   # Ingress configuration
   ingress:
     # -- Specifies whether an ingress for the nginx should be created
-    enabled: false
+    enabled: true
     # -- Ingress Class Name. MAY be required for Kubernetes versions >= 1.18
-    ingressClassName: nginx
+    # ingressClassName: nginx
     # -- Annotations for the nginx ingress
     annotations: {}
     # -- Hosts configuration for the nginx ingress
     hosts:
-      - host: nginx.mimir.example.com
+      - host: mimir.example.com
         paths:
           - path: /
             # -- pathType (e.g. ImplementationSpecific, Prefix, .. etc.) might also be required by some Ingress Controllers
@@ -3301,10 +3300,10 @@ ingress:
       - path: /api/v1/upload/block/
   hosts:
     - mimir.example.com
-  # tls:
-  #   - secretName: mimir-distributed-tls
-  #     hosts:
-  #       - mimir.example.com
+  tls:
+    - secretName: mimir-distributed-tls
+      hosts:
+        - mimir.example.com
 
 # -- A reverse proxy deployment that is meant to receive traffic for Mimir or GEM.
 # When enterprise.enabled is true the GEM gateway is deployed. Otherwise, it is an nginx.
@@ -3312,12 +3311,12 @@ ingress:
 gateway:
   # -- Whether to render the manifests related to the gateway component.
   # This controls the behaviour both when enterprise.enabled=true and when enterprise.enabled=false.
-  enabled: false
+  enabled: true
 
   # -- The gateway is deployed by default for enterprise installations (enterprise.enabled=true).
   # Toggle this to have it deployed for non-enterprise installations too.
   # The value of this field is ignored when gateway.enabled=false.
-  enabledNonEnterprise: false
+  enabledNonEnterprise: true
 
   # -- Number of replicas for the Deployment
   replicas: 1
@@ -3438,7 +3437,7 @@ gateway:
     internalTrafficPolicy: Cluster
 
   ingress:
-    enabled: false
+    enabled: true
     # -- Overrides the name of the Ingress. Useful if you are switching from the deprecated nginx or
     # GEM gateway configuration and you Ingress Controller needs time to reconcile a new Ingress resource.
     # By using the same name as the nginx/GEM gateway Ingress, Helm will not delete the Ingress Resource.
@@ -3456,7 +3455,7 @@ gateway:
         paths:
           - path: /
             # -- pathType (e.g. ImplementationSpecific, Prefix, .. etc.) might also be required by some Ingress Controllers
-            # pathType: Prefix
+            pathType: Prefix
     # -- TLS configuration for the nginx ingress
     tls:
       - secretName: mimir-tls

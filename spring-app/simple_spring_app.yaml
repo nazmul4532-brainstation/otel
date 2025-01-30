@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: spring-app-pvc
+  name: spring-boot-pvc
 spec:
   accessModes:
     - ReadWriteOnce  
@@ -14,33 +14,33 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: spring-app
+  name: spring-boot
   labels:
-    app: spring-app
+    app: spring-boot
 spec:
   selector:
     matchLabels:
-      app: spring-app
+      app: spring-boot
   template:
     metadata:
       labels:
-        app: spring-app
+        app: spring-boot
       # annotations:                  
         # prometheus.io/scrape: "true"
         # prometheus.io/port: "8080"   
         # prometheus.io/path: "/actuator/prometheus" 
     spec:
       containers:
-        - name: spring-app
+        - name: spring-boot
           image: nazmul4532brainstation/spring-boot-demo:latest
           ports:
             - containerPort: 8080
           volumeMounts: 
             - mountPath: /data  
-              name: spring-app-storage  
+              name: spring-boot-storage  
           env:
             - name: OTEL_SERVICE_NAME
-              value: "spring-app"
+              value: "spring-boot"
             - name: OTEL_TRACES_SAMPLER
               value: "always_on"
             - name: OTEL_TRACES_EXPORTER
@@ -54,16 +54,16 @@ spec:
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: "http://opentelemetry-collector-collector.opentelemetry.svc.cluster.local:4317"
       volumes:  
-        - name: spring-app-storage
+        - name: spring-boot-storage
           persistentVolumeClaim:
-            claimName: spring-app-pvc 
+            claimName: spring-boot-pvc 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: spring-app
+  name: spring-boot
   labels:
-    app: spring-app
+    app: spring-boot
   # annotations:                    
   #   # prometheus.io/discover: "true" 
   #   # prometheus.io/path: "/actuator/prometheus"
@@ -74,4 +74,4 @@ spec:
     - port: 8080
       targetPort: 8080
   selector:
-    app: spring-app
+    app: spring-boot

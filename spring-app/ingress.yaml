@@ -4,16 +4,16 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/secure-backends: "true"
-  name: app-ingress
+  name: spring-ingress
 spec:
   rules:
-    - host: spring-app.local.xyz
+    - host: spring-boot.local.xyz
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: spring-app
+                name: spring-boot
                 port:
                   number: 8080
