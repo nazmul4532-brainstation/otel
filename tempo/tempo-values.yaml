@@ -120,7 +120,7 @@ ingester:
   # -- Annotations for the ingester StatefulSet
   annotations: {}
   # -- Number of replicas for the ingester
-  replicas: 3
+  replicas: 2
   # -- hostAliases to add
   hostAliases: []
   #  - ip: 1.2.3.4
