@@ -130,6 +130,7 @@ mimir:
   # To modify the resulting configuration, either copy and alter 'mimir.config' as a whole or use the 'mimir.structuredConfig' to add and modify certain YAML elements.
   config: |
     multitenancy_enabled: false
+    no_auth_tenant: fake
     usage_stats:
       installation_mode: helm
 
@@ -636,11 +637,27 @@ alertmanager:
   # -- Fallback config for alertmanager.
   # When a tenant doesn't have an Alertmanager configuration, the Grafana Mimir Alertmanager uses the fallback configuration.
   fallbackConfig: |
-    receivers:
-        - name: default-receiver
-    route:
-        receiver: default-receiver
-
+      global:
+        resolve_timeout: 5m
+      route:
+        group_by: ['alertname']
+        group_wait: 30s
+        group_interval: 1m
+        repeat_interval: 3h
+        receiver: 'email-notifications'
+        routes:
+          - receiver: 'email-notifications'
+      receivers:
+        - name: 'email-notifications'
+          email_configs:
+            - to: 'nazmulhossain@iut-dhaka.edu'
+              from: 'nazmulhossain4532@gmail.com'
+              smarthost: 'smtp.gmail.com:587'
+              auth_username: 'nazmulhossain4532@gmail.com'
+              auth_identity: 'nazmulhossain4532@gmail.com'
+              auth_password: 'bozd ykzt kkvt fxte'
+              require_tls: true
+              send_resolved: true
   extraArgs: {}
 
   # Pod Labels
@@ -3451,17 +3468,17 @@ gateway:
     # -- Hosts configuration for the Ingress
     hosts:
       # -- Passed through the `tpl` function to allow templating.
-      - host: "{{ .Release.Name }}.mimir.example.com"
+      - host: "mimir.local.xyz"
         paths:
           - path: /
             # -- pathType (e.g. ImplementationSpecific, Prefix, .. etc.) might also be required by some Ingress Controllers
             pathType: Prefix
     # -- TLS configuration for the nginx ingress
     tls:
-      - secretName: mimir-tls
+      - secretName: fintech23xyz-ingress-tls
         # --  Hosts included in the tls certificate. Passed through the `tpl` function to allow templating.
         hosts:
-          - "{{ .Release.Name }}.mimir.example.com"
+          - "mimir.local.xyz"
 
   # -- OpenShift Route configuration
   route:
@@ -3525,7 +3542,13 @@ gateway:
       # -- Allows appending custom configuration to the server block
       serverSnippet: ""
       # -- Allows appending custom configuration to the http block
-      httpSnippet: ""
+      httpSnippet: |
+        # Force override the X-Scope-OrgID header
+        # as clients like Loki tries to use "fake"
+        # but a Mimir without tenants should use "anonymous"
+        map $http_x_scope_orgid $http_x_scope_orgid {
+          "" "fake";
+        }
       # -- Allow to set client_max_body_size in the nginx configuration
       clientMaxBodySize: 540M
       # -- Allows to set a custom resolver

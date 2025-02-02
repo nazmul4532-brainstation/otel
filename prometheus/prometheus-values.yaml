@@ -874,16 +874,6 @@ serverFiles:
             annotations:
               summary: "PVC has Failed"
               description: "PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} has Failed."
-              
-          - alert: PVCWithoutPV
-            expr: kube_persistentvolumeclaim_status_phase{phase="Bound"} * on (persistentvolumeclaim, namespace) group_left kube_persistentvolume_status_phase{phase="Available"} == 0
-            for: 1m
-            labels:
-              severity: critical
-            annotations:
-              summary: "PVC Bound but No Available PV"
-              description: "PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} is bound but has no available backing PersistentVolume."
-
 
   ## Records configuration
   ## Ref: https://prometheus.io/docs/prometheus/latest/configuration/recording_rules/
@@ -1427,34 +1417,9 @@ alertmanager:
       group_wait: 30s
       group_interval: 1m
       repeat_interval: 3h
-      receiver: 'webhook-server-notifications'
-    #   # routes:
-    #   # - receiver: 'email-notifications'
-    #   # - receiver: 'webhook-server-notifications'
-    #   # receiver: 'email-notifications'
-    # receivers:
-    #   # - name: 'email-notifications'
-    #   #   email_configs:
-    #   #     - to: 'nazmulhossain@iut-dhaka.edu'
-    #   #       from: 'nazmulhossain4532@gmail.com'
-    #   #       smarthost: 'smtp.gmail.com:587'
-    #   #       auth_username: 'nazmulhossain4532@gmail.com'
-    #   #       auth_identity: 'nazmulhossain4532@gmail.com'
-    #   #       auth_password: 'bozd ykzt kkvt fxte'
-    #   #       require_tls: true
-    #   - name: 'webhook-server-notifications'
-    #     webhook_configs:
-    #       - send_resolved: true
-    #         url: 'http://webhook-server.waha.svc.cluster.local:3000/alert'
+      receiver: 'email-notifications'
       routes:
         - receiver: 'email-notifications'
-          continue: true
-          matchers:
-              - alertname=~".*"
-        - receiver: 'webhook-server-notifications'
-          continue: true
-          matchers:
-              - alertname=~".*"
     receivers:
       - name: 'email-notifications'
         email_configs:
@@ -1465,10 +1430,30 @@ alertmanager:
             auth_identity: 'nazmulhossain4532@gmail.com'
             auth_password: 'bozd ykzt kkvt fxte'
             require_tls: true
-      - name: 'webhook-server-notifications'
-        webhook_configs:
-          - send_resolved: true
-            url: 'http://webhook-server.waha.svc.cluster.local:3000/alert'
+            send_resolved: true
+    #   routes:
+    #     - receiver: 'email-notifications'
+    #       continue: true
+    #       matchers:
+    #           - alertname=~".*"
+    #     - receiver: 'webhook-server-notifications'
+    #       continue: true
+    #       matchers:
+    #           - alertname=~".*"
+    # receivers:
+    #   - name: 'email-notifications'
+    #     email_configs:
+    #       - to: 'nazmulhossain@iut-dhaka.edu'
+    #         from: 'nazmulhossain4532@gmail.com'
+    #         smarthost: 'smtp.gmail.com:587'
+    #         auth_username: 'nazmulhossain4532@gmail.com'
+    #         auth_identity: 'nazmulhossain4532@gmail.com'
+    #         auth_password: 'bozd ykzt kkvt fxte'
+    #         require_tls: true
+    #   - name: 'webhook-server-notifications'
+    #     webhook_configs:
+    #       - send_resolved: true
+    #         url: 'http://webhook-server.waha.svc.cluster.local:3000/alert'
 
 
 

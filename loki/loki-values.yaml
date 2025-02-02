@@ -441,16 +441,19 @@ loki:
   # -- Check https://grafana.com/docs/loki/latest/configuration/#ruler for more info on configuring ruler
   rulerConfig:
     rule_path: /var/loki/rules-temp
-    alertmanager_url: http://prometheus-alertmanager-headless.prometheus.svc.cluster.local:9093
+    alertmanager_url: http://_http-web._tcp.mimir-gateway.mimir.svc.cluster.local:80/alertmanager
     wal:
       dir: /var/loki/ruler-wal
     enable_alertmanager_v2: true
     enable_api: true
-    enable_alertmanager_discovery: true
-    remote_write:
-      enabled: true
-      client:
-        url: http://prometheus-server.prometheus.svc.cluster.local:9090/api/v1/write
+    # enable_alertmanager_discovery: true
+    external_labels:
+      origin: loki
+    # remote_write:
+    #   enabled: true
+    #   add_org_id_header: false
+    #   clients:
+    #     url: http://_http-web._tcp.mimir-gateway.mimir.svc.cluster.local:80/api/v1/push
   # -- Structured loki configuration, takes precedence over `loki.config`, `loki.schemaConfig`, `loki.storageConfig`
   structuredConfig: {}
   # -- Additional query scheduler config
