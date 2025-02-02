@@ -282,7 +282,7 @@ server:
   ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write
   ##
   remoteWrite:
-    - url: "http://grafana.grafana.svc.cluster.local"
+    - url: "http://mimir-distributor-headless.mimir.svc.cluster.local:8080/api/v1/push"
   ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_read
   ##
   remoteRead: 
@@ -509,7 +509,7 @@ server:
 
     ## Prometheus server data Persistent Volume size
     ##
-    size: 8Gi
+    size: 2Gi
 
     ## Prometheus server data Persistent Volume Storage Class
     ## If defined, storageClassName: <storageClass>
@@ -581,7 +581,7 @@ server:
 
   ## Use a StatefulSet if replicaCount needs to be greater than 1 (see below)
   ##
-  replicaCount: 1
+  replicaCount: 2
 
   ## Number of old history to retain to allow rollback
   ## Default Kubernetes value is set to 10
@@ -600,7 +600,7 @@ server:
     ## If true, use a statefulset instead of a deployment for pod management.
     ## This allows to scale replicas to more than 1 pod
     ##
-    enabled: false
+    enabled: true
 
     annotations: {}
     labels: {}
@@ -728,7 +728,7 @@ server:
 
     ## Enable gRPC port on service to allow auto discovery with thanos-querier
     gRPC:
-      enabled: false
+      enabled: true
       servicePort: 10901
       # nodePort: 10901
 
@@ -737,7 +737,7 @@ server:
     ## of the data.
     statefulsetReplica:
       enabled: true
-      replica: 3
+      replica: 2
 
     ## Additional port to define in the Service
     additionalPorts: []
@@ -798,82 +798,82 @@ serverFiles:
           annotations:                                                                                                                          
             summary: "Node {{ $labels.instance }} is down"                                                                                      
             description: "Node {{ $labels.instance }} running node-exporter is down for more than 5 minutes."                                   
-      - name: service-down-alerts                                                                                                               
-        rules:                                                                                                                                  
-        - alert: SpringServiceDown                                                                                                          
-          expr: up{job="spring-services"} == 0                                                                                                 
-          for: 1m                                                                                                                                     
-          labels:                                                                                                                               
-            severity: critical                                                                                                                         
-          annotations:                                                                                                                          
-            description: The service instance {{ $labels.instance }} at {{ $labels.namespace}} is down and has been unresponsive for more than 5 minutes.
-            summary: Spring Service {{ $labels.instance }} is down. Severity is critical.
+      # - name: service-down-alerts                                                                                                               
+      #   rules:                                                                                                                                  
+      #   - alert: SpringServiceDown                                                                                                          
+      #     expr: up{job="spring-services"} == 0                                                                                                 
+      #     for: 1m                                                                                                                                     
+      #     labels:                                                                                                                               
+      #       severity: critical                                                                                                                         
+      #     annotations:                                                                                                                          
+      #       description: The service instance {{ $labels.instance }} at {{ $labels.namespace}} is down and has been unresponsive for more than 5 minutes.
+      #       summary: Spring Service {{ $labels.instance }} is down. Severity is critical.
  
-      - name: pod-alerts
-        rules:
-          - alert: PodPending
-            expr: kube_pod_status_phase{phase="Pending"} > 0
-            for: 1m
-            labels:
-              severity: critical
-            annotations:
-              summary: "Pod is Pending"
-              description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is Pending for more than 5 minutes."
+      # - name: pod-alerts
+      #   rules:
+      #     - alert: PodPending
+      #       expr: kube_pod_status_phase{phase="Pending"} > 0
+      #       for: 1m
+      #       labels:
+      #         severity: critical
+      #       annotations:
+      #         summary: "Pod is Pending"
+      #         description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is Pending for more than 5 minutes."
 
-          - alert: PodFailed
-            expr: kube_pod_status_phase{phase="Failed"} > 0
-            for: 1m
-            labels:
-              severity: warning
-            annotations:
-              summary: "Pod has Failed"
-              description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has failed."
+      #     - alert: PodFailed
+      #       expr: kube_pod_status_phase{phase="Failed"} > 0
+      #       for: 1m
+      #       labels:
+      #         severity: warning
+      #       annotations:
+      #         summary: "Pod has Failed"
+      #         description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has failed."
 
-          - alert: PodCrashLoopBackOff
-            expr: kube_pod_container_status_waiting{reason="CrashLoopBackOff"} > 0
-            for: 1m
-            labels:
-              severity: warning
-            annotations:
-              summary: "Pod in CrashLoopBackOff"
-              description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is in CrashLoopBackOff state."
+      #     - alert: PodCrashLoopBackOff
+      #       expr: kube_pod_container_status_waiting{reason="CrashLoopBackOff"} > 0
+      #       for: 1m
+      #       labels:
+      #         severity: warning
+      #       annotations:
+      #         summary: "Pod in CrashLoopBackOff"
+      #         description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is in CrashLoopBackOff state."
 
-          - alert: PodUnknown
-            expr: kube_pod_status_phase{phase="Unknown"} > 0
-            for: 1m
-            labels:
-              severity: warning
-            annotations:
-              summary: "Pod is in Unknown State"
-              description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is in an unknown state."
-      - name: pvc-alerts
-        rules:
-          - alert: PVCPending
-            expr: kube_persistentvolumeclaim_status_phase{phase="Pending"} > 0
-            for: 1m
-            labels:
-              severity: critical
-            annotations:
-              summary: "PVC is Pending"
-              description: "PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} is Pending for more than 5 minutes."
+      #     - alert: PodUnknown
+      #       expr: kube_pod_status_phase{phase="Unknown"} > 0
+      #       for: 1m
+      #       labels:
+      #         severity: warning
+      #       annotations:
+      #         summary: "Pod is in Unknown State"
+      #         description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is in an unknown state."
+      # - name: pvc-alerts
+      #   rules:
+      #     - alert: PVCPending
+      #       expr: kube_persistentvolumeclaim_status_phase{phase="Pending"} > 0
+      #       for: 1m
+      #       labels:
+      #         severity: critical
+      #       annotations:
+      #         summary: "PVC is Pending"
+      #         description: "PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} is Pending for more than 5 minutes."
 
-          - alert: PVCLost
-            expr: kube_persistentvolumeclaim_status_phase{phase="Lost"} > 0
-            for: 1m
-            labels:
-              severity: critical
-            annotations:
-              summary: "PVC is Lost"
-              description: "PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} is Lost."
+      #     - alert: PVCLost
+      #       expr: kube_persistentvolumeclaim_status_phase{phase="Lost"} > 0
+      #       for: 1m
+      #       labels:
+      #         severity: critical
+      #       annotations:
+      #         summary: "PVC is Lost"
+      #         description: "PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} is Lost."
 
-          - alert: PVCFailed
-            expr: kube_persistentvolumeclaim_status_phase{phase="Failed"} > 0
-            for: 0m
-            labels:
-              severity: warning
-            annotations:
-              summary: "PVC has Failed"
-              description: "PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} has Failed."
+      #     - alert: PVCFailed
+      #       expr: kube_persistentvolumeclaim_status_phase{phase="Failed"} > 0
+      #       for: 0m
+      #       labels:
+      #         severity: warning
+      #       annotations:
+      #         summary: "PVC has Failed"
+      #         description: "PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} has Failed."
 
   ## Records configuration
   ## Ref: https://prometheus.io/docs/prometheus/latest/configuration/recording_rules/

@@ -485,6 +485,7 @@ mimir:
         backend: s3
         s3:
           bucket_name: "mimir"
+          region: us-east-1
           endpoint: otel-minio-hl.minio-tenant.svc.cluster.local:9000
           secret_access_key: miniosecretkey 
           access_key_id: minioaccesskey
@@ -493,6 +494,7 @@ mimir:
     blocks_storage:
       s3:
         bucket_name: mimir-blocks
+        region: us-east-1
         endpoint: otel-minio-hl.minio-tenant.svc.cluster.local:9000
         secret_access_key: "miniosecretkey"
         access_key_id: "minioaccesskey" 
@@ -501,6 +503,7 @@ mimir:
     alertmanager_storage:
       s3:
         bucket_name: "mimir-alertmanager"
+        region: us-east-1
         endpoint: otel-minio-hl.minio-tenant.svc.cluster.local:9000
         secret_access_key: "miniosecretkey"
         access_key_id: "minioaccesskey"
@@ -510,6 +513,7 @@ mimir:
     ruler_storage:
       s3:
         bucket_name: mimir-ruler
+        region: us-east-1
         endpoint: otel-minio-hl.minio-tenant.svc.cluster.local:9000
         secret_access_key: "miniosecretkey" 
         access_key_id: "minioaccesskey"
@@ -1229,7 +1233,7 @@ ingester:
 
 overrides_exporter:
   enabled: true
-  replicas: 2
+  replicas: 1
 
   annotations: {}
 
@@ -3336,12 +3340,12 @@ gateway:
   enabledNonEnterprise: true
 
   # -- Number of replicas for the Deployment
-  replicas: 1
+  replicas: 2
 
   # -- HorizontalPodAutoscaler
   autoscaling:
     enabled: false
-    minReplicas: 1
+    minReplicas: 2
     maxReplicas: 3
     targetCPUUtilizationPercentage: 70
     targetMemoryUtilizationPercentage: 70

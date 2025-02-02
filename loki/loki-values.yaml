@@ -953,7 +953,7 @@ gateway:
   # -- Specifies whether the gateway should be enabled
   enabled: true
   # -- Number of replicas for the gateway
-  replicas: 1
+  replicas: 2
   # -- Default container port
   containerPort: 8080
   # -- Enable logging of 2xx and 3xx HTTP requests
@@ -962,7 +962,7 @@ gateway:
     # -- Enable autoscaling for the gateway
     enabled: false
     # -- Minimum autoscaling replicas for the gateway
-    minReplicas: 1
+    minReplicas: 2
     # -- Maximum autoscaling replicas for the gateway
     maxReplicas: 3
     # -- Target CPU utilisation percentage for the gateway

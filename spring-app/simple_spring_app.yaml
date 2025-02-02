@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: spring-boot-pvc
+  name: spring-app-pvc
 spec:
   accessModes:
     - ReadWriteOnce  
@@ -14,33 +14,33 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: spring-boot
+  name: spring-app
   labels:
-    app: spring-boot
+    app: spring-app
 spec:
   selector:
     matchLabels:
-      app: spring-boot
+      app: spring-app
   template:
     metadata:
       labels:
-        app: spring-boot
-      # annotations:                  
-        # prometheus.io/scrape: "true"
-        # prometheus.io/port: "8080"   
-        # prometheus.io/path: "/actuator/prometheus" 
+        app: spring-app
+      annotations:                  
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"   
+        prometheus.io/path: "/actuator/prometheus" 
     spec:
       containers:
-        - name: spring-boot
+        - name: spring-app
           image: nazmul4532brainstation/spring-boot-demo:latest
           ports:
             - containerPort: 8080
           volumeMounts: 
             - mountPath: /data  
-              name: spring-boot-storage  
+              name: spring-app-storage  
           env:
             - name: OTEL_SERVICE_NAME
-              value: "spring-boot"
+              value: "spring-app"
             - name: OTEL_TRACES_SAMPLER
               value: "always_on"
             - name: OTEL_TRACES_EXPORTER
@@ -54,24 +54,24 @@ spec:
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: "http://opentelemetry-collector-collector.opentelemetry.svc.cluster.local:4317"
       volumes:  
-        - name: spring-boot-storage
+        - name: spring-app-storage
           persistentVolumeClaim:
-            claimName: spring-boot-pvc 
+            claimName: spring-app-pvc 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: spring-boot
+  name: spring-app
   labels:
-    app: spring-boot
-  # annotations:                    
-  #   # prometheus.io/discover: "true" 
-  #   # prometheus.io/path: "/actuator/prometheus"
-  #   # prometheus.io/port: "8080"   
+    app: spring-app
+  annotations:                    
+    prometheus.io/discover: "true" 
+    prometheus.io/path: "/actuator/prometheus"
+    prometheus.io/port: "8080"   
 spec:
   type: ClusterIP
   ports:
     - port: 8080
       targetPort: 8080
   selector:
-    app: spring-boot
+    app: spring-app

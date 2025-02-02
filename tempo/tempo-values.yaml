@@ -210,7 +210,7 @@ ingester:
     # -- use emptyDir with ramdisk instead of PVC. **Please note that all data in ingester will be lost on pod restart**
     inMemory: false
     # -- Size of persistent or memory disk
-    size: 5Gi
+    size: 2Gi
     # -- Storage class to be used.
     # If defined, storageClassName: <storageClass>.
     # If set to "-", storageClassName: "", which disables dynamic provisioning.
@@ -449,7 +449,7 @@ metricsGenerator:
       # -- https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write
       # remote_write: []
       remote_write: 
-        - url: http://prometheus-server.prometheus.svc.cluster.local:80/api/v1/write
+        - url: http://prometheus-server-headless.prometheus.svc.cluster.local:80/api/v1/write
           send_exemplars: true
     # -- Used by the local blocks processor to store a wal for traces.
     traces_storage:
@@ -855,7 +855,7 @@ queryFrontend:
     # -- Extra volumes for tempo-query deployment
     extraVolumes: []
     config: |
-      backend: 127.0.0.1:3100
+      backend: http://minioaccesskey:miniosecretkey@otel-minio-hl.minio-tenant.svc.cluster.local:9000
   # -- Number of replicas for the query-frontend
   replicas: 1
   # -- hostAliases to add
@@ -1170,12 +1170,14 @@ traces:
       # -- Enable Tempo to ingest Open Telemetry HTTP traces
       enabled: true
       # -- HTTP receiver advanced config
-      receiverConfig: {}
+      receiverConfig:
+        endpoint: "0.0.0.0:4318"
     grpc:
       # -- Enable Tempo to ingest Open Telemetry GRPC traces
       enabled: true
       # -- GRPC receiver advanced config
-      receiverConfig: {}
+      receiverConfig: 
+        endpoint: "0.0.0.0:4317"
   opencensus:
     # -- Enable Tempo to ingest Open Census traces
     enabled: false
@@ -1554,10 +1556,10 @@ storage:
     # -- The supported storage backends are gcs, s3 and azure, as specified in https://grafana.com/docs/tempo/latest/configuration/#storage
     backend: s3
     s3:
-      access_key: "minioacceskey"  
+      access_key: "minioaccesskey"  
       secret_key: "miniosecretkey"
-      bucket: "tempo"                     # Name of the bucket for Tempo
-      endpoint: "minioaccesskey:miniosecretkey@otel-minio-hl.minio-tenant.svc.cluster.local:9000" # Replace <minio-endpoint> with MinIO server address
+      bucket: "tempo"                    
+      endpoint: "minioaccesskey:miniosecretkey@otel-minio-hl.minio-tenant.svc.cluster.local:9000"
       insecure: true    
     # The worker pool is used primarily when finding traces by id, but is also used by others.
     pool:
