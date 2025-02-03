@@ -1,17 +1,19 @@
 
 ##First create a test Cluster... Change the ssh key configuration, and the ip addresses in the file accordingly.
 k0sctl apply --config cluster_creation/cluster_config.yaml --no-wait 
-cilium install --version 1.16.1 --values cilium_values.yaml 
+k0sctl kubeconfig --config cluster_creation/cluster_config.yaml > k0s_10_11_12_kubeconfig
+cp k0s_10_11_12_kubeconfig ~/.kube/config
+cilium install --version 1.16.1 --values cluster_creation/cilium_values.yaml 
 cilium status --wait
+kubectl apply -f cluster_creation/ingresscontroller.yaml
 
 ##Then create an admin ServiceAccount
 kubectl apply -f admin-sa_creation/admin_sa_rolebinding.yaml 
-kubectl apply -f admin-sa_createion/admin_sa_token_secret.yaml 
+kubectl apply -f admin-sa_creation/admin_sa_token_secret.yaml 
 
-##Deploy the dummy spring project using:
-kubectl create namespace spring-app
-kubectl apply -f spring-app/simple_spring_app.yaml -n spring-app
-kubectl apply -f spring-app/ingress.yaml
+#Helm deploy openebs storageclass
+helm upgrade --install openebs openebs/openebs --namespace openebs --create-namespace
+kubectl patch storageclass openebs-hostpath -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 
 ##Applying Metrics API in a cluster... wait a while.. most likely needed for pod metrics
 kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
@@ -23,9 +25,12 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/kube-state-metrics
 kubectl patch deployment kube-state-metrics -n kube-system --type='json' -p='[{"op": "add", "path": "/spec/template/spec/serviceAccountName", "value": "admin-sa"}]'
 kubectl patch deployment metrics-server -n kube-system --type='json' -p='[{"op": "add", "path": "/spec/template/spec/serviceAccountName", "value": "admin-sa"}]'
 
-#Helm deploy openebs storageclass
-helm upgrade --install openebs openebs/openebs --namespace openebs --create-namespace
-kubectl patch storageclass openebs-hostpath -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+
+##Deploy the dummy spring project using:
+kubectl create namespace spring-app
+kubectl apply -f spring-app/simple_spring_app.yaml -n spring-app
+kubectl apply -f spring-app/ingress.yaml
+
 
 ##Helm deploy minio
 #Minio Operator Installation:
