@@ -1,6 +1,6 @@
 
 ##First create a test Cluster... Change the ssh key configuration, and the ip addresses in the file accordingly.
-k0sctl apply --config cluser_creation/cluster_config.yaml --no-wait 
+k0sctl apply --config cluster_creation/cluster_config.yaml --no-wait 
 cilium install --version 1.16.1 --values cilium_values.yaml 
 cilium status --wait
 
