@@ -37,18 +37,22 @@ kubectl apply -f spring-app/ingress.yaml
 helm upgrade --install \
   --namespace minio-operator \
   --create-namespace \
-  operator minio-operator/operator -f operator-values.yaml
+  operator minio-operator/operator -f minio/operator-values.yaml
 
-    kubectl apply -f operator-console-nodeport-service.yaml
+kubectl apply -f minio/operator-console-nodeport-service.yaml
     
 #Tenant Installation:
 helm upgrade --install \
   --namespace minio-tenant \
   --create-namespace \
-  tenant minio-operator/tenant -f tenant-values.yaml
+  tenant minio-operator/tenant -f minio/tenant-values.yaml
 
-Go into Minio Console and create the necessary buckets.. loki, loki-chunks, loki-rulers, loki-admin
-Generate an access key, and set the following as the access key policy
+
+##Minio console ingress   
+kubectl apply -f minio/ingress.yaml -n minio-tenant
+
+#Go into Minio Console and create the necessary buckets.. loki, loki-chunks, loki-rulers, loki-admin
+#Generate an access key, and set the following as the access key policy
 {
  "Version": "2012-10-17",
  "Statement": [
@@ -64,8 +68,6 @@ Generate an access key, and set the following as the access key policy
  ]
 }
 
-##Minio console ingress   
-kubectl apply -f minio/ingress.yaml -n minio-tenant
 
 
 ##Helm deploy prometheus
@@ -77,23 +79,24 @@ helm upgrade --install prometheus prometheus-community/prometheus -f prometheus/
 helm upgrade --install mimir grafana/mimir-distributed -f mimir/mimir-values.yaml --namespace mimir --create-namespace
 
 ##Helm deploy loki
-helm upgrade --install loki grafana/loki -f loki/loki-memberlist.yaml --namespace loki --create-namespace
+helm upgrade --install loki grafana/loki -f loki/loki-values.yaml --namespace loki --create-namespace
 
 ##Helm deploy tempo
-helm upgrade --install tempo grafana/tempo-distributed -f tempo/tempo-values.yaml --namespace tempo
+helm upgrade --install tempo grafana/tempo-distributed -f tempo/tempo-values.yaml --namespace tempo --create-namespace
 
 ##Helm deploy opentelemetry operator
-helm upgrade --install -n opentelemetry opentelemetry-operator open-telemetry/opentelemetry-operator -f otel/otel-operator-values.yaml
+helm upgrade --install -n opentelemetry --create-namespace opentelemetry-operator open-telemetry/opentelemetry-operator -f otel/otel-operator-values.yaml
 
 ##Apply opentelemetry-collector in daemonset mode... if needed change to deployment
 kubectl apply -n opentelemetry -f otel/otel-collector.yaml
 
 ##Helm deploy opentelemetry collector
 #helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
-#helm upgrade --install opentelemetry-collector open-telemetry/opentelemetry-collector --set mode=daemonset --set image.repository="otel/opentelemetry-collector-k8s" --set command.name="otelcol-k8s" -n opentelemetry
+##helm upgrade --install opentelemetry-collector open-telemetry/opentelemetry-collector --set mode=daemonset --set image.repository="otel/opentelemetry-collector-k8s" --set command.name="otelcol-k8s" -n opentelemetry
 
 ##Helm deploy grafana
 #Custom Login Credentials
+kubectl create namespace grafana
 kubectl create secret generic grafana-admin-secret \
   --from-literal=admin-user=admin \
   --from-literal=admin-password=fintech@bs23 \
